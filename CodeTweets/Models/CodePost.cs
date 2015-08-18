@@ -12,6 +12,7 @@ namespace CodeTweets.Models
         public string title { get; set; }
         public string content { get; set; }
         public int votes { get; set; }
+        public string type { get; set; }
 
     }
 

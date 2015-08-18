@@ -1,0 +1,58 @@
+﻿<h1>Enter New code post</h1>
+
+<div ng-controller="CodePostController">
+    <form class="form-horizontal">
+        <fieldset>
+
+            <!-- Form Name -->
+            <legend>New Code post</legend>
+
+            <!-- Text input-->
+            <div class="control-group">
+                <label class="control-label" for="textinput">Title</label>
+                <div class="controls">
+                    <input id="textinput" name="textinput" type="text" ng-model="codePost.title" class="form-control">
+
+                </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="control-group">
+                <label class="control-label" for="selectbasic">Languages</label>
+                <div class="controls">
+                    <select id="selectbasic" name="selectbasic" class="input-xlarge" ng-model="codePost.type">
+                        <option>C#</option>
+                        <option>C++</option>
+                        <option>Java</option>
+                        <option>Lisp</option>
+                        <option>Python</option>
+                        <option>Ruby</option>
+                        <option>Brainfuck</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Textarea -->
+            <div class="control-group">
+                <label class="control-label" for="textarea">Code</label>
+                <div class="controls">
+                    <textarea id="textarea" name="textarea"  class="form-control" ng-model="codePost.content">
+                        default text
+
+                    </textarea>
+                </div>
+            </div>
+
+            <!-- Button (Double) -->
+            <div class="control-group">
+                <label class="control-label" for="button1id"></label>
+                <div class="controls">
+                    <button id="button1id" name="button1id" class="btn btn-success" ng-click="newCodePost()">Submit</button>
+                    <button id="button2id" name="button2id" class="btn btn-danger">Cancel</button>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
