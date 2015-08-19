@@ -1,0 +1,27 @@
+﻿@model IEnumerable <CodeTweets.Models.ApplicationUser>
+
+<div class="container" ng-controller="FollowController">
+    <h2>Find new people</h2>
+    <p>Follow other people and be followed by everyone (sponsered by NSA)</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nick Name</th>
+                <th>Email</th>     
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td><a href="/Feed/UserPage?userId=@user.Id" /> @user.user</td>
+                <td>@user.UserName</td>
+                <input type="hidden" ng-model="userId" value="English">
+                <td><button class="btn btn-success" ng-click="follow('@user.Id')">Follow</button></td>
+            </tr>
+        }
+
+        </tbody>
+    </table>
+</div>
+                                               

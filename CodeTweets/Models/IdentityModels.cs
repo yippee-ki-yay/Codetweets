@@ -10,10 +10,14 @@ namespace CodeTweets.Models
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class ApplicationUser : IdentityUser
     {
-        public virtual List<CodePost> posts
+        public CodePost posts
         {
             get; set;
         }
+
+        public virtual List<string> followList { get; set; }
+
+        public string user { get; set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
@@ -27,7 +31,7 @@ namespace CodeTweets.Models
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+            : base("MyUsersDbContext", throwIfV1Schema: false)
         {
         }
 

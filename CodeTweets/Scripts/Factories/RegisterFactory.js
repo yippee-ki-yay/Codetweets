@@ -1,13 +1,14 @@
-﻿var LoginFactory = function ($http, $q) {
-    return function (emailAddress, password, rememberMe) {
+﻿var RegisterFactory = function ($http, $q) {
+    return function (emailAddress, password, confirmPassword, User) {
 
         var deferredObject = $q.defer();
 
         $http.post(
-            '/Account/Login', {
+            '/Account/Register', {
                 Email: emailAddress,
                 Password: password,
-                RememberMe: rememberMe
+                ConfirmPassword: confirmPassword,
+                user: User
             }
         ).
         success(function (data) {
@@ -25,4 +26,4 @@
     }
 }
 
-LoginFactory.$inject = ['$http', '$q'];
+RegisterFactory.$inject = ['$http', '$q'];

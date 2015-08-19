@@ -3,7 +3,11 @@
 CodeTweets.controller('LandingPageController', LandingPageController);
 CodeTweets.controller('LoginController', LoginController);
 CodeTweets.controller('CodePostController', CodePostController);
+CodeTweets.controller('RegisterController', RegisterController);
+CodeTweets.controller('FollowController', FollowController);
+
 CodeTweets.factory('LoginFactory', LoginFactory);
+CodeTweets.factory('RegisterFactory', RegisterFactory);
 
 var configFunction = function ($routeProvider)
 {
@@ -19,7 +23,11 @@ var configFunction = function ($routeProvider)
         })
          .when('/AddCodePost', {
              templateUrl: 'routesDemo/addCodePost'
-          })
+         })
+         .when('/register', {
+             templateUrl: 'Account/Register',
+             controller: RegisterController
+         })
         .when('/login?returnUrl', {
             templateUrl: 'Account/Login',
             controller: LoginController

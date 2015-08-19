@@ -20,7 +20,7 @@
         .then(function (response) {
             alert(response);
         }, function (response) {
-            alert('server nije ok');
+            alert('server not ok');
         });
     }
 }

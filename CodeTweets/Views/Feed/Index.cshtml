@@ -1,0 +1,22 @@
+﻿@model IEnumerable<CodeTweets.Models.CodePost>
+
+<h1>Hey thanks for joining us @ViewBag.username</h1>
+
+
+@foreach (var item in Model)
+{
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            @Html.DisplayFor(modelItem => item.title)
+        </div>
+        <div class="panel-body">
+            @Html.DisplayFor(modelItem => item.content)
+
+            <div class="pull-right comBtn">
+                <button class="btn btn-default cmnt" id="@item.id">Baci comment</button>
+            </div>
+
+        </div>
+    </div>
+
+}

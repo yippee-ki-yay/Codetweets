@@ -13,7 +13,7 @@ namespace CodeTweets.Models
         public string content { get; set; }
         public int votes { get; set; }
         public string type { get; set; }
-
+        public string user_id { get; set; }
     }
 
     public class CodePostDbContext : DbContext

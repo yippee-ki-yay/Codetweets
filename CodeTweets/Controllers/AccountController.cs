@@ -1,11 +1,16 @@
-﻿using CodeTweets.Models;
-using Microsoft.AspNet.Identity.Owin;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security;
+using CodeTweets.Models;
+using System.Net;
+using System.Web.Security;
 
 namespace CodeTweets.Controllers
 {
@@ -47,6 +52,17 @@ namespace CodeTweets.Controllers
             return View();
         }
 
+        // POST: /Account/LogOff
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LogOff()
+        {
+            HttpContext.GetOwinContext().Authentication.SignOut();
+            // FormsAuthentication.SignOut();
+            return RedirectToAction("Index", "Home");
+        }
+
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<bool> Login(LoginViewModel model)
@@ -66,7 +82,7 @@ namespace CodeTweets.Controllers
         [AllowAnonymous]
         public async Task<bool> Register(RegisterViewModel model)
         {
-            var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser { UserName = model.Email, Email = model.Email, user = model.user};
             var result = await UserManager.CreateAsync(user, model.Password);
             if (!result.Succeeded) return false;
             await SignInManager.SignInAsync(user, false, false);

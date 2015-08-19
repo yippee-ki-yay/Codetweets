@@ -29,6 +29,7 @@ namespace CodeTweets
 
             bundles.Add(new ScriptBundle("~/bundles/CodeTweets")
                 .IncludeDirectory("~/Scripts/Controllers", "*.js")
+                .IncludeDirectory("~/Scripts/Factories", "*.js")
                 .Include("~/Scripts/CodeTweets.js"));
         }
     }
