@@ -20,7 +20,35 @@ namespace CodeTweets.Controllers
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
+            List<CodePost> list = new List<CodePost>();
+
+            List<string> followList = null;
+
+            if (currentUser.followList != null)
+                followList = currentUser.followList.Split('\n').ToList();
+            else
+                return View(list);
+
+            foreach(CodePost post in db.posts.ToList())
+            {
+                if(followList.Contains(post.user_id))
+                {
+                    list.Add(post);
+                }
+            }
+
+            return View(list);
+        }
+
+        [Authorize]
+        public ActionResult UserPage()
+        {
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+
             ViewBag.username = currentUser.user;
+
+
 
             IEnumerable<CodePost> list = from code in db.posts.ToList()
                                          where code.user_id == currentUser.Id
@@ -47,13 +75,14 @@ namespace CodeTweets.Controllers
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
-            if(currentUser.followList == null)
-            {
-                currentUser.followList = new List<string>();
-            }
 
-            currentUser.followList.Add(userId);
+            currentUser.followList += userId + '\n';
 
+            manager.UpdateAsync(currentUser);
+
+            var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
+
+            store.Context.SaveChanges();
             return "success";
         }
     }

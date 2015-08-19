@@ -15,7 +15,7 @@ namespace CodeTweets.Models
             get; set;
         }
 
-        public virtual List<string> followList { get; set; }
+        public string followList { get; set; }
 
         public string user { get; set; }
 
