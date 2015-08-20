@@ -13,6 +13,7 @@ namespace CodeTweets.Controllers
     public class ExploreController : Controller
     {
         // GET: Explore
+        [Authorize]
         public ActionResult Index()
         {
             string userId = User.Identity.GetUserId();

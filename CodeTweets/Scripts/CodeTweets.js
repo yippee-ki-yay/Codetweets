@@ -24,6 +24,9 @@ var configFunction = function ($routeProvider)
          .when('/AddCodePost', {
              templateUrl: 'routesDemo/addCodePost'
          })
+         .when('/Profile', {
+             templateUrl: 'Feed/UserPosts',
+          })
          .when('/register', {
              templateUrl: 'Account/Register',
              controller: RegisterController

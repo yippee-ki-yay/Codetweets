@@ -189,6 +189,8 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CodePost.cs" />
     <Compile Include="Models\Comment.cs" />
+    <Compile Include="Models\HashTag.cs" />
+    <Compile Include="Models\HashTagPost.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -197,10 +199,38 @@
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="css\animate.min.css" />
+    <Content Include="css\bootstrap.css" />
+    <Content Include="css\bootstrap.js" />
+    <Content Include="css\bootstrap.min.css" />
+    <Content Include="css\bootstrap.min.js" />
+    <Content Include="css\cbpAnimatedHeader.js" />
+    <Content Include="css\classie.js" />
+    <Content Include="css\creative.css" />
+    <Content Include="css\creative.js" />
+    <Content Include="css\jquery.easing.min.js" />
+    <Content Include="css\jquery.fittext.js" />
+    <Content Include="css\jquery.js" />
+    <Content Include="css\wow.min.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="img\1.jpg" />
+    <Content Include="img\2.jpg" />
+    <Content Include="img\3.jpg" />
+    <Content Include="img\4.jpg" />
+    <Content Include="img\5.jpg" />
+    <Content Include="img\6.jpg" />
+    <Content Include="js\bootstrap.js" />
+    <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\cbpAnimatedHeader.js" />
+    <Content Include="js\classie.js" />
+    <Content Include="js\creative.js" />
+    <Content Include="js\jquery.easing.min.js" />
+    <Content Include="js\jquery.fittext.js" />
+    <Content Include="js\jquery.js" />
+    <Content Include="js\wow.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
@@ -209,6 +239,7 @@
     <Content Include="Scripts\Controllers\FollowController.js" />
     <Content Include="Scripts\Controllers\LandingPageController.js" />
     <Content Include="Scripts\Controllers\LoginController.js" />
+    <Content Include="Scripts\Controllers\PostsController.js" />
     <Content Include="Scripts\Factories\LoginFactory.js" />
     <Content Include="Scripts\Controllers\RegisterController.js" />
     <Content Include="Scripts\Factories\RegisterFactory.js" />
@@ -254,9 +285,11 @@
     <Content Include="Views\Feed\Index.cshtml" />
     <Content Include="Views\Explore\Index.cshtml" />
     <Content Include="Views\Feed\UserPage.cshtml" />
+    <Content Include="Views\Feed\UserPosts.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="font-awsome\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />

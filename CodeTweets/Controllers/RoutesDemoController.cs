@@ -29,6 +29,7 @@ namespace CodeTweets.Controllers
             return View();
         }
 
+        [Authorize]
         public ActionResult addCodePost()
         {
             return View();
@@ -48,7 +49,10 @@ namespace CodeTweets.Controllers
                 user.posts = new CodePost();
             }
 
-            
+            //db.hashTags.Add(new HashTag() { id = 1, tag="#yolo", count=3 });
+
+            //HashTagPost post = new HashTagPost();
+            //post.CodePostId = user.posts.id;
 
             if (title != null && content != null && type != null)
             {
@@ -57,6 +61,7 @@ namespace CodeTweets.Controllers
                 tmp.type = type;
                 tmp.votes = 0;
                 tmp.user_id = user.Id;
+                tmp.userName = user.user;
             }
 
             user.posts = tmp;
