@@ -12,11 +12,11 @@ namespace CodeTweets.Models
         public string title { get; set; }
         public string content { get; set; }
         public int votes { get; set; }
-        public string type { get; set; }
         public string user_id { get; set; }
         public string userName { get; set; }
         public int like { get; set; }
         public int hate { get; set; }
+        public DateTime date { get; set; }
 
         public virtual List<HashTagPost> tagPosts { get; set; }
     }
@@ -25,5 +25,7 @@ namespace CodeTweets.Models
     {
         public DbSet<CodePost> posts { get; set; }
         public DbSet<HashTagPost> hashTags { get; set; }
+        public DbSet<HashTag> tags { get; set; }
+        public DbSet<UsersFollow> userFollows { get; set; }
     }
 }

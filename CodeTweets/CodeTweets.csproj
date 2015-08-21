@@ -193,12 +193,14 @@
     <Compile Include="Models\HashTagPost.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\UsersFollow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\UserList.css" />
     <Content Include="css\animate.min.css" />
     <Content Include="css\bootstrap.css" />
     <Content Include="css\bootstrap.js" />
@@ -240,6 +242,7 @@
     <Content Include="Scripts\Controllers\LandingPageController.js" />
     <Content Include="Scripts\Controllers\LoginController.js" />
     <Content Include="Scripts\Controllers\PostsController.js" />
+    <Content Include="Scripts\Controllers\UsersController.js" />
     <Content Include="Scripts\Factories\LoginFactory.js" />
     <Content Include="Scripts\Controllers\RegisterController.js" />
     <Content Include="Scripts\Factories\RegisterFactory.js" />

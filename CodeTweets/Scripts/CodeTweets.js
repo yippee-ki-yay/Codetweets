@@ -5,6 +5,8 @@ CodeTweets.controller('LoginController', LoginController);
 CodeTweets.controller('CodePostController', CodePostController);
 CodeTweets.controller('RegisterController', RegisterController);
 CodeTweets.controller('FollowController', FollowController);
+CodeTweets.controller('PostsController', PostsController);
+CodeTweets.controller('UsersController', UsersController);
 
 CodeTweets.factory('LoginFactory', LoginFactory);
 CodeTweets.factory('RegisterFactory', RegisterFactory);

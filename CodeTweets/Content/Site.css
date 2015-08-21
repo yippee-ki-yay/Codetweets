@@ -17,6 +17,7 @@
 }
 
 /* Set width on the form input elements since they're 100% wide by default */
+/*
 input,
 select,
 textarea {
@@ -25,7 +26,7 @@ textarea {
 .navbar-form input, .form-inline input {
   width:auto;
 }
-
+    */
 
 body {
   padding-top:50px;
@@ -195,7 +196,7 @@ a,a:hover {
   text-align:center;
   margin-bottom: 30px;
 }
-
+/*
 .form-control {
   position: relative;
   font-size: 16px;
@@ -208,7 +209,7 @@ input[type="text"] {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
-
+*/
 .reg_btn
 {
     margin-top: 15px;

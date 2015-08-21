@@ -1,6 +1,17 @@
-﻿@model IEnumerable <CodeTweets.Models.ApplicationUser>
-
+﻿
 <div class="container" ng-controller="FollowController">
+
+    <div class="panel panel-info src_panel">
+        <div class="panel-body">
+            <div class="col-lg-10">
+                <input type="text" class="form-control" ng-model="searchText" />
+            </div>
+            <div class="col-lg-2">
+                <button type="button" class="btn btn-success" ng-click="search()">Search</button>
+            </div>
+        </div>
+    </div>
+
     <h2>Find new people</h2>
     <p>Follow other people and be followed by everyone (sponsered by NSA)</p>
     <table class="table">
@@ -10,17 +21,11 @@
                 <th>Email</th>     
             </tr>
         </thead>
-        <tbody>
-        @foreach (var user in Model)
-        {
-            
-                <td><a href="/Feed/UserPage?userId=@user.Id" /> @user.user</td>
-                <td>@user.UserName</td>
-                <td><button class="btn btn-success" ng-click="follow('@user.Id')">Follow</button></td>
-            
-        }
-
-        </tbody>
+            <tr ng-repeat="x in AllUsers">
+                <td><a href="/Feed/UserPage?userId={{x.Id}}" /> {{x.user}}</td>
+                <td>{{x.UserName}}</td>
+                <td><button class="btn btn-success" ng-click="follow(x.Id)">Follow</button></td>
+            </tr>  
     </table>
 </div>
                                                

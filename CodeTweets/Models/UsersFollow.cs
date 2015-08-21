@@ -7,17 +7,16 @@ using System.Web;
 
 namespace CodeTweets.Models
 {
-    public class HashTagPost
+    public class UsersFollow
     {
         [Key, Column(Order = 0)]
-        public int CodePostId { get; set; }
+        public int UserFollowId { get; set; }
 
         [Key, Column(Order = 1)]
-        public int HashTagId { get; set; }
-        
-        public virtual CodePost Post { get; set; }
+        public int UserFollowedId { get; set; }
 
-        public virtual HashTag Hash { get; set; }
+        public virtual ApplicationUser UserFollow { get; set; }
 
+        public virtual ApplicationUser UserFollowed { get; set; }
     }
 }

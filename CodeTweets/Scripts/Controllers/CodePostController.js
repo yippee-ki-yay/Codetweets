@@ -9,28 +9,42 @@
             type: 'Lisp'
         };
 
-    $scope.listMyCodePosts = function()
-    {
         $http.post('/Feed/getUserPosts')
        .then(function (response) {
-           $scope.posts = response;
+           $scope.posts = response.data;
+       }, function (response) {
+           alert('server not ok');
+       });
+    
+
+   // $scope.listMyCodePosts();
+
+    $scope.search = function()
+    {
+        $http.get('/Feed/userPosts', {hashtag: 'ipsum'})
+       .then(function (response) {
+           alert('src');
        }, function (response) {
            alert('server not ok');
        });
     }
 
-   // $scope.listMyCodePosts();
-
     $scope.listCodePosts = function()
     {
-
+       /* $http.post('/Feed/getUserPosts',)
+      .then(function (response) {
+          $scope.pos
+      }, function (response) {
+          alert('server not ok');
+      });*/
     }
 
     $scope.retweet = function(post_id)
     {
         $http.post('/Feed/Retweet', { "id": post_id })
       .then(function (response) {
-            alert("Retweet");
+          alert("Retweet");
+          $window.location.reload();
           //$window.location.reload();
       }, function (response) {
           alert('server not ok');

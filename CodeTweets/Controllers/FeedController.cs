@@ -1,6 +1,7 @@
 ﻿using CodeTweets.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,37 +46,54 @@ namespace CodeTweets.Controllers
 
 
         [HttpPost]
-        public string getUserPosts()
+        public ContentResult getUserPosts()
         {
-            /*var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
             if(currentUser.user != null)
             ViewBag.username = currentUser.user;
 
-            IEnumerable<CodePost> list = from code in db.posts.ToList()
+            IEnumerable<CodePost> jsonList = from code in db.posts.ToList()
                                          where code.user_id == currentUser.Id
                                          select code;
 
-            var jsonSerialiser = new JavaScriptSerializer();
-            var json = jsonSerialiser.Serialize(list);
+            var list = JsonConvert.SerializeObject(jsonList,
+                                                  Formatting.None,
+                                                  new JsonSerializerSettings()
+                                        {
+                                                 ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                                        });
 
-            return json;*/
-            return "";
+            return Content(list, "application/json");
         }
 
         //Izlistava sve postove trenutnog korisnika
         [Authorize]
-        public ActionResult UserPosts()
+        public ActionResult UserPosts(string hashtag)
         {
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
             ViewBag.username = currentUser.user;
 
-            IEnumerable<CodePost> list = from code in db.posts.ToList()
-                                         where code.user_id == currentUser.Id
-                                         select code;
+            IEnumerable<CodePost> list = null;
+
+            if (hashtag != null)
+            {
+                HashTag searchtag = db.tags.ToList().Find(t => t.tag == hashtag);
+                list = db.hashTags.
+                       Where(t => t.Hash.tag == (hashtag)).
+                       Select(t => t.Post).
+                       ToList();
+            }
+            else
+            {
+                list = from code in db.posts.ToList()
+                       where code.user_id == currentUser.Id
+                       select code;
+
+            }
 
             return View(list);
         }
@@ -97,15 +115,18 @@ namespace CodeTweets.Controllers
         {
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
-
+            var followedUser = manager.FindById(userId);
 
             currentUser.followList += userId + '\n';
+
+            db.userFollows.Add(new UsersFollow() { UserFollow = currentUser, UserFollowed = followedUser});
 
             manager.UpdateAsync(currentUser);
 
             var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 
             store.Context.SaveChanges();
+            db.SaveChanges();
             return "success";
         }
 
@@ -157,7 +178,7 @@ namespace CodeTweets.Controllers
 
                 currPost.user_id = currentUser.Id;
 
-                currPost.content = "@" + currPost.userName + "has tweeted: " + currPost.content;
+                currPost.content = "<a href='/Feed/UserPage?userId=" + currentUser.Id + "'> @" + currPost.userName + " </a> has tweeted: " + currPost.content;
 
                 currPost.userName = currentUser.user;
     
