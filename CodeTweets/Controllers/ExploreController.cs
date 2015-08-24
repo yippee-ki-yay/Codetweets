@@ -1,5 +1,7 @@
 ﻿using CodeTweets.Models;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,18 +30,46 @@ namespace CodeTweets.Controllers
         }
 
         [HttpPost]
-        public string UsersJson()
+        public ContentResult UsersJson()
         {
             string userId = User.Identity.GetUserId();
 
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+
             var UsersContext = new ApplicationDbContext();
 
-            IEnumerable<ApplicationUser> list = UsersContext.Users.Where(x => x.Id != userId).ToList();
+            var listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
 
-            var jsonSerialiser = new JavaScriptSerializer();
-            var json = jsonSerialiser.Serialize(list);
+            //including additional information if the users are blocked/followed
+            List<ExploreUsersViewModel> exploreList = new List<ExploreUsersViewModel>();
 
-            return json;
+            foreach (var user in listUsers)
+            {
+                ExploreUsersViewModel tmp = new ExploreUsersViewModel();
+
+                var follow = currentUser.followList.Find(u => u.Id == user.Id);
+                var block = currentUser.blockedList.Find(u => u.Id == user.Id);
+
+                tmp.isFollowed = (follow != null) ? "Unfollow" : "Follow";
+                tmp.isBlocked = (block != null) ? "Unblock" : "Block";
+                tmp.Id = user.Id;
+                tmp.user = user.user;
+                tmp.UserName = user.UserName;
+
+                exploreList.Add(tmp);
+
+            }
+
+            var list = JsonConvert.SerializeObject(exploreList,
+                                               Formatting.None,
+                                               new JsonSerializerSettings()
+                                               {
+                                                   ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                                               });
+            
+
+            return Content(list, "application/json");
         }
 
         [HttpPost]

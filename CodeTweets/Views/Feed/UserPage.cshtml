@@ -1,9 +1,15 @@
 ﻿@model IEnumerable<CodeTweets.Models.CodePost>
 
-
 <div class="row">
     <div class="col-lg-8">
-        <h2>Profile: @ViewBag.username see all of his posts</h2>
+        @if (ViewBag.banned == false)
+        {
+         <h2>Profile: @ViewBag.username see all of his posts</h2>
+        }
+        else
+        {
+            <h2>User has you blocked</h2>
+        }
     </div>
 
     <div class="col-lg-4">
@@ -11,8 +17,9 @@
     </div>
 </div>
 
-
-@foreach (var item in Model)
+@if(ViewBag.banned == false)
+{
+foreach (var item in Model)
 {
     <div class="panel panel-info">
         <div class="panel-heading">
@@ -27,5 +34,5 @@
 
         </div>
     </div>
-
+    }
 }

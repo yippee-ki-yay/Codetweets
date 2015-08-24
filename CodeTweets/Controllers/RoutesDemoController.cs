@@ -13,7 +13,7 @@ namespace CodeTweets.Controllers
 {
     public class RoutesDemoController : Controller
     {
-        CodePostDbContext db = new CodePostDbContext();
+        ApplicationDbContext db = new ApplicationDbContext();
 
         public ActionResult One()
         {
@@ -68,6 +68,8 @@ namespace CodeTweets.Controllers
                     newTag.count = 0;
                     newTag.tag = postTag;
 
+                    db.posts.Add(post);
+
                     db.hashTags.Add(new HashTagPost(){ Hash = newTag, Post = post});
                     continue;
                 }
@@ -88,11 +90,7 @@ namespace CodeTweets.Controllers
             var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
             var userManager = new UserManager<ApplicationUser>(store);
             ApplicationUser user = userManager.FindByNameAsync(User.Identity.Name).Result;
-            
-            if(user.posts == null)
-            {
-                user.posts = new CodePost();
-            }
+            var currentUser = userManager.FindById(User.Identity.GetUserId());
 
             if (title != null && content != null && type != null)
             {
@@ -103,14 +101,13 @@ namespace CodeTweets.Controllers
                 tmp.userName = user.user;
             }
 
-            updateHashTags(tmp);
+            // updateHashTags(tmp);
 
-            user.posts = tmp;
 
-           // IdentityDbContext db = new IdentityDbContext();
-           // db.SaveChanges();
+            // IdentityDbContext db = new IdentityDbContext();
+            // db.SaveChanges();
 
-     //       db.posts.Add(tmp);
+            db.posts.Add(tmp);
             db.SaveChanges();
 
             return "success";

@@ -24,7 +24,8 @@
             <tr ng-repeat="x in AllUsers">
                 <td><a href="/Feed/UserPage?userId={{x.Id}}" /> {{x.user}}</td>
                 <td>{{x.UserName}}</td>
-                <td><button class="btn btn-success" ng-click="follow(x.Id)">Follow</button></td>
+                <td><button class="btn btn-success" ng-click="follow(x.Id, x.isFollowed)">{{x.isFollowed}}</button></td>
+                <td><button class="btn btn-danger" ng-click="block(x.Id, x.isBlocked)">{{x.isBlocked}}</button></td>
             </tr>  
     </table>
 </div>

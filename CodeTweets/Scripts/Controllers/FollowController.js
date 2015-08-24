@@ -2,6 +2,9 @@
 {
     $scope.isDisabled = true;
 
+    $scope.followed = "Follow";
+    $scope.blocked = "Blocked";
+
     $scope.row = {
         show  : false
     };
@@ -37,11 +40,44 @@
         $scope.AllUsers.splice(index, 1);
     }
 
-    $scope.follow = function (user) {
-        $http.post('/Feed/addFollow', { "userId":user })
+    $scope.getRow = function(Id)
+    {
+        var arr = eval($scope.AllUsers);
+        for (var i = 0; i < arr.length; i++)
+        {
+            if (arr[i].Id === Id)
+                return arr[i];
+        }
+
+    }
+
+    $scope.follow = function (user, state) {
+        $http.post('/Feed/addFollow', { "userId":user, type:state})
         .then(function (response) {
-            $scope.row.show = true;
-            $scope.removeRow(user);
+            if (response.data === "success")
+            {
+                var curr = $scope.getRow(user);
+                if (curr.isFollowed == "Follow")
+                    curr.isFollowed = "Unfollow";
+                else
+                    curr.isFollowed = "Follow";
+            }
+        }, function (response) {
+            alert('server not ok');
+        });
+    }
+
+    $scope.block = function (user, state) {
+        $http.post('/Feed/addBlock', { "userId": user, type:state })
+        .then(function (response) {
+            if(response.data === "success")
+            {
+                var curr = $scope.getRow(user);
+                if (curr.isBlocked == "Block")
+                    curr.isBlocked = "Unblock";
+                else
+                    curr.isBlocked = "Block";
+            }
         }, function (response) {
             alert('server not ok');
         });

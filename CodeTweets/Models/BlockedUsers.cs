@@ -5,10 +5,11 @@ using System.Web;
 
 namespace CodeTweets.Models
 {
-    public class UsersFollow
+    public class BlockedUsers
     {
         public int id { get; set; }
-        public string UserFollowedId { get; set; }
-        public string UserFollowingId { get; set; }
+
+        public string FollowedUserId { get; set; }
+        public string FollowsUserId { get; set; }
     }
 }

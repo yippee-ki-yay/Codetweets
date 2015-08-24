@@ -17,6 +17,8 @@
        });
     
 
+    //tweet.replace(/(\#\S+)/g, "<a href=\"\"> $1 </a>");
+
    // $scope.listMyCodePosts();
 
     $scope.search = function()
@@ -31,12 +33,21 @@
 
     $scope.listCodePosts = function()
     {
-       /* $http.post('/Feed/getUserPosts',)
+     /*   $http.post('/Feed/getUserPosts')
       .then(function (response) {
           $scope.pos
       }, function (response) {
           alert('server not ok');
       });*/
+    }
+
+    $scope.getRow = function (Id) {
+        var arr = eval($scope.posts);
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].id === Id)
+                return arr[i];
+        }
+
     }
 
     $scope.retweet = function(post_id)
@@ -55,8 +66,11 @@
     {
         $http.post('/Feed/Like', { "id": post_id})
        .then(function (response) {
-         //  alert("like lol");
-           $window.location.reload();
+           if (response.data === "success")
+           {
+               var curr = $scope.getRow(post_id);
+               curr.like++;
+           }
        }, function (response) {
            alert('server not ok');
        });
@@ -66,8 +80,11 @@
     {
         $http.post('/Feed/Hate', { "id": post_id })
               .then(function (response) {
-             //     alert("like lol");
-                  $window.location.reload();
+                  if(response.data === "success")
+                  {
+                      var curr = $scope.getRow(post_id);
+                      curr.hate++;
+                  }
               }, function (response) {
                   alert('server not ok');
               });

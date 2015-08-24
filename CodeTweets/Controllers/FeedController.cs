@@ -13,7 +13,7 @@ namespace CodeTweets.Controllers
 {
     public class FeedController : Controller
     {
-        private CodePostDbContext db = new CodePostDbContext();
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Feed
         [Authorize]
@@ -26,24 +26,34 @@ namespace CodeTweets.Controllers
 
             List<CodePost> list = new List<CodePost>();
 
-            List<string> followList = null;
-
             if (currentUser.followList != null)
-                followList = currentUser.followList.Split('\n').ToList();
+                list = getFollowedPosts(currentUser);
             else
                 return View(list);
 
-            foreach(CodePost post in db.posts.ToList())
-            {
-                if(followList.Contains(post.user_id))
-                {
-                    list.Add(post);
-                }
-            }
-
-            return View(list);
+            return View("UserPosts", list);
         }
 
+        private List<CodePost> getFollowedPosts(ApplicationUser currentUser)
+        {
+            using (ApplicationDbContext context = new ApplicationDbContext())
+            {
+                List<CodePost> posts = new List<CodePost>();
+
+                foreach (var user in currentUser.followList)
+                {
+                    foreach (var post in context.posts)
+                    {
+                        if (post.user_id == user.Id)
+                        {
+                            posts.Add(post);
+                        }
+                    }
+                }
+
+                return posts;
+            }
+        }
 
         [HttpPost]
         public ContentResult getUserPosts()
@@ -51,19 +61,19 @@ namespace CodeTweets.Controllers
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
-            if(currentUser.user != null)
-            ViewBag.username = currentUser.user;
+            if (currentUser.user != null)
+                ViewBag.username = currentUser.user;
 
             IEnumerable<CodePost> jsonList = from code in db.posts.ToList()
-                                         where code.user_id == currentUser.Id
-                                         select code;
+                                             where code.user_id == currentUser.Id
+                                             select code;
 
             var list = JsonConvert.SerializeObject(jsonList,
                                                   Formatting.None,
                                                   new JsonSerializerSettings()
-                                        {
-                                                 ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                                        });
+                                                  {
+                                                      ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                                                  });
 
             return Content(list, "application/json");
         }
@@ -103,7 +113,25 @@ namespace CodeTweets.Controllers
         public ActionResult UserPage(string userId)
         {
 
-            IEnumerable<CodePost> list = from code in db.posts.ToList()
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+            var viewedUser = manager.FindById(userId);
+
+            ViewBag.banned = false;
+
+            //check if the current user is banned from viewing this users homepage
+            var banned = viewedUser.blockedList.Find(user => user.Id == currentUser.Id);
+
+            IEnumerable<CodePost> list = null;
+
+            //you are in their banned list
+            if (banned != null)
+            {
+                ViewBag.banned = true;
+                return View(list);
+            }
+
+             list = from code in db.posts.ToList()
                                          where code.user_id == userId
                                          select code;
 
@@ -111,15 +139,20 @@ namespace CodeTweets.Controllers
         }
 
         [HttpPost]
-        public string AddFollow(string userId)
+        public string AddFollow(string userId, string type)
         {
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
             var followedUser = manager.FindById(userId);
-
-            currentUser.followList += userId + '\n';
-
-            db.userFollows.Add(new UsersFollow() { UserFollow = currentUser, UserFollowed = followedUser});
+           
+            if(type.Equals("Follow"))
+            {
+                currentUser.followList.Add(followedUser);
+            }
+            else
+            {
+                UnFollow(currentUser, followedUser);
+            }
 
             manager.UpdateAsync(currentUser);
 
@@ -130,14 +163,67 @@ namespace CodeTweets.Controllers
             return "success";
         }
 
+        public void UnFollow(ApplicationUser curr, ApplicationUser followed)
+        {
+            var follow = curr.followList.Find(user => user.Id == followed.Id);
+
+            if (follow != null)
+            {
+                curr.followList.Remove(followed);
+            }
+        }
+
+        [HttpPost]
+        public string AddBlock(string userId, string type)
+        {
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+            var blockedUser = manager.FindById(userId);
+
+            if (type.Equals("Block"))
+            {
+                currentUser.blockedList.Add(blockedUser);
+
+                //unfollow each person if there was any following
+                UnFollow(currentUser, blockedUser);
+                UnFollow(blockedUser, currentUser);
+            }
+            else
+            {
+                var block = currentUser.blockedList.Find(user => user.Id == blockedUser.Id);
+
+                if (block != null)
+                {
+                    currentUser.blockedList.Remove(block);
+                }
+            }
+
+            manager.UpdateAsync(currentUser);
+
+            var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
+
+            store.Context.SaveChanges();
+            db.SaveChanges();
+            return "success";
+        }
+
+
         //Like is called by angular to update like count on post
         [HttpPost]
         public string Like(int id)
         {
-            foreach(CodePost post in db.posts.ToList())
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+
+            foreach (CodePost post in db.posts.ToList())
             {
                 if(post.id == id)
                 {
+
+                    //upisemo u bazu koj korisnik je lajkovao sta, onda mozemo da sortiramo po tom info i da se glasa samo jednom
+                    //db.votes.Add(new UsersVotes() { User = db.Users.ToList().Find(ll => ll.Id == currentUser.Id), Post = post});
+                    //db.votes.Add(new UsersVotes() { User = currentUser, Post = post});
+
                     post.like++;
                     db.SaveChanges();
                     return "success";
@@ -151,10 +237,15 @@ namespace CodeTweets.Controllers
         [HttpPost]
         public string Hate(int id)
         {
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+
             foreach (CodePost post in db.posts.ToList())
             {
                 if (post.id == id)
                 {
+                    //db.votes.Add(new UsersVotes() { User = db.Users.ToList().Find(ll => ll.Id == currentUser.Id), Post = post });
+
                     post.hate++;
                     db.SaveChanges();
                     return "success";
@@ -181,12 +272,13 @@ namespace CodeTweets.Controllers
                 currPost.content = "<a href='/Feed/UserPage?userId=" + currentUser.Id + "'> @" + currPost.userName + " </a> has tweeted: " + currPost.content;
 
                 currPost.userName = currentUser.user;
-    
+
+                var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 
                 //add the new post with the new id/name and handle
                 db.posts.Add(currPost);
 
-                db.SaveChanges();
+                store.Context.SaveChanges();
 
                 return "success";
             }
