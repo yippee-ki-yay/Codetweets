@@ -8,15 +8,19 @@ namespace CodeTweets.Models
 {
     public class Comment
     {
+        public Comment()
+        {
+            date = DateTime.Now;
+        }
+
         public int id { get; set; }
         public string content { get; set; }
+        public DateTime date { get; set; }
+        public string user_id { get; set; }
+        public string userName { get; set; }
 
-        public virtual CodePost opCode {get; set;}
-    }
+        public virtual IEnumerable<CommentPost> postComments { get; set; }
 
-    public class CommentDbContext : DbContext
-    {
-        public DbSet<Comment> comments { get; set; }
     }
 
 }

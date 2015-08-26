@@ -76,6 +76,7 @@ namespace CodeTweets.Controllers
 
                 result.count++;
                 db.hashTags.Add(new HashTagPost() { Hash = result, Post = post});
+                db.posts.Add(post);
             }
 
            // db.SaveChanges();

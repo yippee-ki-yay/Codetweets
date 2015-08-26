@@ -22,7 +22,7 @@
             </tr>
         </thead>
             <tr ng-repeat="x in AllUsers">
-                <td><a href="/Feed/UserPage?userId={{x.Id}}" /> {{x.user}}</td>
+                <td><a href="/Feed/UserPosts?type={{x.Id}}" /> {{x.user}}</td>
                 <td>{{x.UserName}}</td>
                 <td><button class="btn btn-success" ng-click="follow(x.Id, x.isFollowed)" ng-disabled="x.isDisabled">{{x.isFollowed}}</button></td>
                 <td><button class="btn btn-danger" ng-click="block(x.Id, x.isBlocked)">{{x.isBlocked}}</button></td>

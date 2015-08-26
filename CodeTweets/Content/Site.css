@@ -211,11 +211,31 @@ input[type="text"] {
 }
 */
 
+.vote
+{
+    padding-right:220px;
+}
+
+.vote_single
+{
+     margin-right: 10px;
+}
+
 .vote_btn
 {
     padding: 0;
     border: none;
     background: none;
+}
+
+.like
+{
+    background-color: forestgreen;
+}
+
+.hate 
+{
+    background-color: red;
 }
 
 .reg_btn

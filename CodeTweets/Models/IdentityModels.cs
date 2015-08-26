@@ -8,6 +8,7 @@ using System.Data.Entity.Validation;
 using System;
 using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
+using System.ComponentModel.DataAnnotations;
 
 namespace CodeTweets.Models
 {
@@ -67,6 +68,8 @@ namespace CodeTweets.Models
         public DbSet<UsersVotes> votes { get; set; }
         public DbSet<BlockedUsers> blockedUsers { get; set; }
         public DbSet<UsersFollow> followedUsers { get; set; }
+        public DbSet<CommentPost> postComments { get; set; }
+        public DbSet<Comment> comments { get; set; }
 
         public ApplicationDbContext()
             : base("ApplicationDbContext", throwIfV1Schema: false)

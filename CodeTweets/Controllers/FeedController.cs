@@ -21,12 +21,15 @@ namespace CodeTweets.Controllers
         [Authorize]
         public ActionResult Index()
         {
+            //HACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            return RedirectToAction("UserPosts");
+
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
             ViewBag.username = currentUser.user;
 
-            List<CodePost> list = new List<CodePost>();
+            IEnumerable<CodePost> list = new List<CodePost>();
 
             if (currentUser.followList != null)
                 list = getFollowedPosts(currentUser);
@@ -36,7 +39,7 @@ namespace CodeTweets.Controllers
             return View(list);
         }
 
-        private List<CodePost> getFollowedPosts(ApplicationUser currentUser)
+        private IEnumerable<CodePost> getFollowedPosts(ApplicationUser currentUser)
         {
             using (ApplicationDbContext context = new ApplicationDbContext())
             {
@@ -57,6 +60,37 @@ namespace CodeTweets.Controllers
             }
         }
 
+        private void orderPosts(string orderParam, IEnumerable<CodePost> jsonList)
+        {
+            if (orderParam.Equals("date"))
+            {
+                if (toggleDate)
+                {
+                    jsonList = jsonList.OrderByDescending(post => post.date);
+                    toggleDate = false;
+                }
+                else
+                {
+                    jsonList = jsonList.OrderBy(post => post.date);
+                    toggleDate = true;
+                }
+
+            }
+            else if (orderParam.Equals("user"))
+            {
+                if (toggleUser)
+                {
+                    jsonList = jsonList.OrderByDescending(post => post.userName);
+                    toggleUser = false;
+                }
+                else
+                {
+                    jsonList = jsonList.OrderBy(post => post.userName);
+                    toggleUser = true;
+                }
+            }
+        }
+
         [HttpPost]
         public ContentResult getUserPosts(string orderParam, string type, string count, string hashtag)
         {
@@ -68,60 +102,60 @@ namespace CodeTweets.Controllers
 
             IEnumerable<CodePost> jsonList = null;
 
+            //number of posts for infinite scroll
             int cnt = 0;
-
             if (!String.IsNullOrEmpty(count))
                 cnt = Int32.Parse(count);
 
-            //posts of the user
-            // if (String.IsNullOrEmpty(type))
-            /*jsonList = from code in db.posts.ToList()
-                       where code.user_id == currentUser.Id
-                       select code;*/
 
-
-            if(!String.IsNullOrEmpty(hashtag))
+            if(!String.IsNullOrEmpty(hashtag)) //all posts with that hashtag
             {
                 jsonList = db.hashTags.
                        Where(t => t.Hash.tag == (hashtag)).
                        Select(t => t.Post).
                        ToList();
             }
-            else
-                jsonList = db.posts.ToList().Where(post => post.user_id == currentUser.Id);//.Take(5).Skip(cnt);
-          //  else
-            //    jsonList = getFollowedPosts(currentUser);
-
-            if(!String.IsNullOrEmpty(orderParam))
-            if(orderParam.Equals("date"))
+            else if(type != null) //all posts from that user
             {
-                    if (toggleDate)
-                    {
-                        jsonList = jsonList.OrderByDescending(post => post.date);
-                        toggleDate = false;
-                    }
-                    else
-                    {
-                        jsonList = jsonList.OrderBy(post => post.date);
-                        toggleDate = true;
-                    }
-                        
+                //this means ge the current user profile
+                if (type == "")
+                    type = currentUser.Id;
+
+                jsonList = from code in db.posts.ToList()
+                           where code.user_id == type
+                           select code;
             }
-            else if(orderParam.Equals("user"))
+            else //all posts of current users
+                jsonList = getFollowedPosts(currentUser);
+
+            List<ProfilePostsViewModel> profileList = new List<ProfilePostsViewModel>();
+
+            foreach(CodePost post in jsonList)
             {
-                    if (toggleUser)
-                    {
-                        jsonList = jsonList.OrderByDescending(post => post.userName);
-                        toggleUser = false;
-                    }
-                    else
-                    {
-                        jsonList = jsonList.OrderBy(post => post.userName);
-                        toggleUser = true;
-                    }
+                ProfilePostsViewModel tmp = new ProfilePostsViewModel();
+
+                tmp.id = post.id;
+                tmp.title = post.title;
+                tmp.content = post.content;
+                tmp.like = post.like;
+                tmp.hate = post.hate;
+                tmp.userName = post.userName;
+
+                //uzmemo iz baze votova da li je korisnik na ovom postu lupio like/hate i saljemo ka klijentu
+                //TODO
+
+                tmp.commentList = from c in db.postComments.ToList()
+                               where c.CodePostId == post.id
+                               select c.Comment;
+
+                profileList.Add(tmp);
             }
 
-            var list = JsonConvert.SerializeObject(jsonList,
+            //Post sorting by date and user name
+            if (!String.IsNullOrEmpty(orderParam))
+                orderPosts(orderParam, jsonList);
+
+            var list = JsonConvert.SerializeObject(profileList,
                                                   Formatting.None,
                                                   new JsonSerializerSettings()
                                                   {
@@ -318,6 +352,45 @@ namespace CodeTweets.Controllers
             return "fail";
         }
 
+
+        [HttpPost]
+        public JsonResult commentsForPost(int postId)
+        {
+            CodePost currPost = db.posts.ToList().Find(x => x.id == postId);
+
+
+            if (currPost != null)
+            {
+                var comments = db.postComments.Select(comment => comment.CodePostId == postId);
+
+              
+
+                return Json(comments);
+            }
+
+            return Json("");
+        }
+
+        [HttpPost]
+        public string Reply(int postId, string commentContent)
+        {
+            //find the post
+            CodePost currPost = db.posts.ToList().Find(x => x.id == postId);
+
+            if (currPost != null)
+            {
+                Comment newComment = new Comment() { content = commentContent, user_id = currPost.user_id, userName = currPost.userName };
+
+                db.postComments.Add(new CommentPost() { Post = currPost, Comment = newComment});
+
+                db.SaveChanges();
+
+                return "success";
+            }
+
+            return "fail";
+        }
+
         //we take the post id you want to retweet and add to current user post list with @originalPoster inserted
         [HttpPost]
         public string Retweet(int id)
@@ -332,16 +405,14 @@ namespace CodeTweets.Controllers
 
                 currPost.user_id = currentUser.Id;
 
-                currPost.content = "<a href='/Feed/UserPage?userId=" + currentUser.Id + "'> @" + currPost.userName + " </a> has tweeted: " + currPost.content;
+                currPost.content = "<a href='/Feed/UserPosts?type=" + currentUser.Id + "'> @" + currPost.userName + " </a> has tweeted: " + currPost.content;
 
                 currPost.userName = currentUser.user;
-
-                var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 
                 //add the new post with the new id/name and handle
                 db.posts.Add(currPost);
 
-                store.Context.SaveChanges();
+                db.SaveChanges();
 
                 return "success";
             }

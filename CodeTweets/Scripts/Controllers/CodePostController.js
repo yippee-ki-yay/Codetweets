@@ -15,22 +15,37 @@
             count: 0
         };
 
-    var searchObject = $location.search();
+    function getJsonFromUrl() {
+        var query = $window.location.search.substr(1);
+        var result = {};
+        query.split("&").forEach(function (part) {
+            var item = part.split("=");
+            result[item[0]] = decodeURIComponent(item[1]);
+        });
+        return result;
+    }
 
-    $http.post('/Feed/getUserPosts', {hashtag:$scope.hashtag})
-       .then(function (response) {
-           $scope.posts = response.data;
-           $scope.scroll.count = $scope.posts.length;
-
-           for (var i = 0; i < $scope.posts.length; ++i)
-           {
-               $scope.posts[i].content = $scope.posts[i].content.replace(/\#(\S+)/g, "<a href=\"/Feed/UserPosts?hashtag=$1\"> $1 </a>");
-           }
+    $scope.urlJson = getJsonFromUrl();
 
 
-       }, function (response) {
-           alert('server not ok');
-       });
+    $scope.loadData = function() {
+        $http.post('/Feed/getUserPosts', { hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'] })
+           .then(function (response) {
+               $scope.posts = response.data;
+               $scope.scroll.count = $scope.posts.length;
+
+               for (var i = 0; i < $scope.posts.length; ++i) {
+                   $scope.posts[i].content = $scope.posts[i].content.replace(/\#(\S+)/g, "<a href=\"/Feed/UserPosts?hashtag=$1\"> $1 </a>");
+                   $scope.posts[i].showComments = false;
+               }
+
+
+           }, function (response) {
+               alert('server not ok');
+           });
+    }
+
+    $scope.loadData();
 
     /*$http.post('/Feed/getUserPosts', {type:"feed"})
        .then(function (response) {
@@ -40,7 +55,7 @@
        });*/
     
 
-    $scope.loadMore = function ()
+   /* $scope.loadMore = function ()
     {
         console.log("skrolaj");
 
@@ -67,7 +82,7 @@
       });
 
         console.log('get more data');
-    }
+    }*/
 
     //tweet.replace(/(\#\S+)/g, "<a href=\"\"> $1 </a>");
 
@@ -137,6 +152,30 @@
        }, function (response) {
            alert('server not ok');
        });
+    }
+
+    $scope.listComments = function(postId)
+    {
+        $http.post('/Feed/commentsForPost', { "postId": postId})
+           .then(function (response) {
+               if (response.data === "success") {
+
+               }
+           }, function (response) {
+               alert('server not ok');
+           });
+    }
+
+    $scope.reply = function(postId)
+    {
+        $http.post('/Feed/Reply', { "postId": postId, "commentContent": $scope.commentText })
+            .then(function (response) {
+                if (response.data === "success") {
+                    $scope.loadData();
+                }
+            }, function (response) {
+                alert('server not ok');
+            });
     }
 
     $scope.hate = function(post_id)

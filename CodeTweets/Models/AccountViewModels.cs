@@ -76,7 +76,7 @@ namespace CodeTweets.Models
         public string Password { get; set; }
 
         [Required]
-        [Display(Name = "Enter your username")]
+        [Display(Name = "Username")]
         public string user { get; set; }
 
         [DataType(DataType.Password)]

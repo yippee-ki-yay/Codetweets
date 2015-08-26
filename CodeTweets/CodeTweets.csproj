@@ -190,6 +190,7 @@
     <Compile Include="Models\BlockedUsers.cs" />
     <Compile Include="Models\CodePost.cs" />
     <Compile Include="Models\Comment.cs" />
+    <Compile Include="Models\CommentPost.cs" />
     <Compile Include="Models\HashTag.cs" />
     <Compile Include="Models\HashTagPost.cs" />
     <Compile Include="Models\IdentityModels.cs" />

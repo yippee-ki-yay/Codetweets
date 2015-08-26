@@ -26,19 +26,30 @@ namespace CodeTweets.Models
         public int hate { get; set; }
         public DateTime date { get; set; }
 
-        public virtual List<HashTagPost> tagPosts { get; set; }
-        public virtual List<UsersVotes> usersVotes { get; set; }
+        public virtual IEnumerable<HashTagPost> tagPosts { get; set; }
+        public virtual IEnumerable<UsersVotes> usersVotes { get; set; }
+        public virtual IEnumerable<CommentPost> postComments { get; set; }
     }
 
     public class ProfilePostsViewModel
     {
+
+        public ProfilePostsViewModel()
+        {
+           // commentList = new List<Comment>();
+        }
+
         public int id { get; set; }
         public string title { get; set; }
         public string content { get; set; }
+        public string userName { get; set; }
         public int like { get; set; }
         public int hate { get; set; }
-        public string liked { get; set; }
-        public string hated { get; set; }
+      //  public string liked { get; set; }
+      //  public string hated { get; set; }
+
+        public IEnumerable<Comment> commentList { get; set; }
+
     }
 
     /*public class CodePostDbContext: DbContext
