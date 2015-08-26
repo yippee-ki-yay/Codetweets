@@ -14,6 +14,8 @@ namespace CodeTweets.Controllers
     public class FeedController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        private static bool toggleDate = true;
+        private static bool toggleUser = true;
 
         // GET: Feed
         [Authorize]
@@ -31,7 +33,7 @@ namespace CodeTweets.Controllers
             else
                 return View(list);
 
-            return View("UserPosts", list);
+            return View(list);
         }
 
         private List<CodePost> getFollowedPosts(ApplicationUser currentUser)
@@ -56,7 +58,7 @@ namespace CodeTweets.Controllers
         }
 
         [HttpPost]
-        public ContentResult getUserPosts()
+        public ContentResult getUserPosts(string orderParam, string type, string count, string hashtag)
         {
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
@@ -64,9 +66,60 @@ namespace CodeTweets.Controllers
             if (currentUser.user != null)
                 ViewBag.username = currentUser.user;
 
-            IEnumerable<CodePost> jsonList = from code in db.posts.ToList()
-                                             where code.user_id == currentUser.Id
-                                             select code;
+            IEnumerable<CodePost> jsonList = null;
+
+            int cnt = 0;
+
+            if (!String.IsNullOrEmpty(count))
+                cnt = Int32.Parse(count);
+
+            //posts of the user
+            // if (String.IsNullOrEmpty(type))
+            /*jsonList = from code in db.posts.ToList()
+                       where code.user_id == currentUser.Id
+                       select code;*/
+
+
+            if(!String.IsNullOrEmpty(hashtag))
+            {
+                jsonList = db.hashTags.
+                       Where(t => t.Hash.tag == (hashtag)).
+                       Select(t => t.Post).
+                       ToList();
+            }
+            else
+                jsonList = db.posts.ToList().Where(post => post.user_id == currentUser.Id);//.Take(5).Skip(cnt);
+          //  else
+            //    jsonList = getFollowedPosts(currentUser);
+
+            if(!String.IsNullOrEmpty(orderParam))
+            if(orderParam.Equals("date"))
+            {
+                    if (toggleDate)
+                    {
+                        jsonList = jsonList.OrderByDescending(post => post.date);
+                        toggleDate = false;
+                    }
+                    else
+                    {
+                        jsonList = jsonList.OrderBy(post => post.date);
+                        toggleDate = true;
+                    }
+                        
+            }
+            else if(orderParam.Equals("user"))
+            {
+                    if (toggleUser)
+                    {
+                        jsonList = jsonList.OrderByDescending(post => post.userName);
+                        toggleUser = false;
+                    }
+                    else
+                    {
+                        jsonList = jsonList.OrderBy(post => post.userName);
+                        toggleUser = true;
+                    }
+            }
 
             var list = JsonConvert.SerializeObject(jsonList,
                                                   Formatting.None,
@@ -188,7 +241,7 @@ namespace CodeTweets.Controllers
                 UnFollow(currentUser, blockedUser);
                 UnFollow(blockedUser, currentUser);
             }
-            else
+            else  //unblock user just remove him from the list
             {
                 var block = currentUser.blockedList.Find(user => user.Id == blockedUser.Id);
 
@@ -212,7 +265,7 @@ namespace CodeTweets.Controllers
         [HttpPost]
         public string Like(int id)
         {
-            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
             foreach (CodePost post in db.posts.ToList())
@@ -220,13 +273,18 @@ namespace CodeTweets.Controllers
                 if(post.id == id)
                 {
 
-                    //upisemo u bazu koj korisnik je lajkovao sta, onda mozemo da sortiramo po tom info i da se glasa samo jednom
-                    //db.votes.Add(new UsersVotes() { User = db.Users.ToList().Find(ll => ll.Id == currentUser.Id), Post = post});
-                    //db.votes.Add(new UsersVotes() { User = currentUser, Post = post});
+                    var res = currentUser.usersVotes.Find(user => user.UserId == currentUser.Id && post.id == user.CodePostId);
 
-                    post.like++;
-                    db.SaveChanges();
-                    return "success";
+                    if(res == null)
+                    {
+                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post });
+
+                        post.like++;
+                        db.SaveChanges();
+                        return "success";
+                    }
+                        
+                    
                 }
             }
 
@@ -244,11 +302,16 @@ namespace CodeTweets.Controllers
             {
                 if (post.id == id)
                 {
-                    //db.votes.Add(new UsersVotes() { User = db.Users.ToList().Find(ll => ll.Id == currentUser.Id), Post = post });
+                    var res = currentUser.usersVotes.Find(user => user.UserId == currentUser.Id && post.id == user.CodePostId);
 
-                    post.hate++;
-                    db.SaveChanges();
-                    return "success";
+                    if (res == null)
+                    {
+                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post });
+
+                        post.hate++;
+                        db.SaveChanges();
+                        return "success";
+                    }
                 }
             }
 

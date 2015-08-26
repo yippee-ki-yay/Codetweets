@@ -1,4 +1,4 @@
-﻿var CodePostController = function($scope, $http, $window)
+﻿var CodePostController = function($scope, $http, $window, $location)
 {
     var placeholder = 'some data';
 
@@ -9,17 +9,80 @@
             type: 'Lisp'
         };
 
-        $http.post('/Feed/getUserPosts')
+    $scope.scroll =
+        {
+            busy: "false",
+            count: 0
+        };
+
+    var searchObject = $location.search();
+
+    $http.post('/Feed/getUserPosts', {hashtag:$scope.hashtag})
+       .then(function (response) {
+           $scope.posts = response.data;
+           $scope.scroll.count = $scope.posts.length;
+
+           for (var i = 0; i < $scope.posts.length; ++i)
+           {
+               $scope.posts[i].content = $scope.posts[i].content.replace(/\#(\S+)/g, "<a href=\"/Feed/UserPosts?hashtag=$1\"> $1 </a>");
+           }
+
+
+       }, function (response) {
+           alert('server not ok');
+       });
+
+    /*$http.post('/Feed/getUserPosts', {type:"feed"})
        .then(function (response) {
            $scope.posts = response.data;
        }, function (response) {
            alert('server not ok');
-       });
+       });*/
     
+
+    $scope.loadMore = function ()
+    {
+        console.log("skrolaj");
+
+        if ($scope.scroll.busy == true)
+            return;
+
+        $scope.scroll.busy = true;
+
+        $http.post('/Feed/getUserPosts', { count: $scope.scroll.count })
+      .then(function (response) {
+          for (var i = 0; i < response.data.length; ++i)
+          {
+              if ($scope.posts != undefined)
+              {
+                  $scope.posts.push(response.data[i]);
+                  $scope.scroll.busy = false;
+              }
+   
+          }
+          $scope.scroll.count += 5;
+         
+      }, function (response) {
+          alert('server not ok');
+      });
+
+        console.log('get more data');
+    }
 
     //tweet.replace(/(\#\S+)/g, "<a href=\"\"> $1 </a>");
 
    // $scope.listMyCodePosts();
+
+        $scope.order = function(type)
+        {
+            $http.post('/Feed/getUserPosts', { orderParam :type})
+                .then(function (response) {
+                 $scope.posts = response.data;
+            }, function (response) {
+             alert('server not ok');
+             });
+        }
+
 
     $scope.search = function()
     {
@@ -101,4 +164,4 @@
     }
 }
 
-CodePostController.$inject = ['$scope', '$http', '$window'];
+CodePostController.$inject = ['$scope', '$http', '$window', '$location'];

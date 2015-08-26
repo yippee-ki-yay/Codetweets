@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
+using System;
+using System.Data.Entity.Infrastructure;
+using System.Diagnostics;
 
 namespace CodeTweets.Models
 {
@@ -29,6 +33,20 @@ namespace CodeTweets.Models
         }
     }
 
+    public class DatabaseInitializer : DropCreateDatabaseIfModelChanges<ApplicationDbContext>
+    {
+        public object PasswordHash { get; private set; }
+
+        protected override void Seed(ApplicationDbContext context)
+        {
+            var PasswordHash = new PasswordHasher();
+
+            context.Users.Add(new ApplicationUser() { user = "sdfds", UserName="nesa@gmail.com", PasswordHash = PasswordHash.HashPassword("123456") });
+            context.SaveChanges();
+            base.Seed(context);
+        }
+    }
+
     public class ExploreUsersViewModel
     {
         public string Id { get; set; }
@@ -37,6 +55,7 @@ namespace CodeTweets.Models
 
         public string isFollowed { get; set; }
         public string isBlocked { get; set; }
+        public bool isDisabled { get; set; }
     }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
@@ -67,6 +86,44 @@ namespace CodeTweets.Models
         public static ApplicationDbContext Create()
         {
             return new ApplicationDbContext();
+        }
+
+        public override int SaveChanges()
+        {
+            try
+            {
+                return base.SaveChanges();
+            }
+            catch (DbEntityValidationException e)
+            {
+                foreach (var eve in e.EntityValidationErrors)
+                {
+                    Debug.WriteLine(@"",
+                        eve.Entry.Entity.GetType().Name, eve.Entry.State);
+                    foreach (var ve in eve.ValidationErrors)
+                    {
+                        Debug.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+                            ve.PropertyName, ve.ErrorMessage);
+                    }
+                }
+                throw;
+            }
+            catch (DbUpdateException e)
+            {
+                Console.Write("OVDE TI JE EXCEPTION:   " + e.InnerException);
+                //Add your code to inspect the inner exception and/or
+                //e.Entries here.
+                //Or just use the debugger.
+                //Added this catch (after the comments below) to make it more obvious 
+                //how this code might help this specific problem
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                throw;
+            }
+
+            return 0;
         }
     }
 }

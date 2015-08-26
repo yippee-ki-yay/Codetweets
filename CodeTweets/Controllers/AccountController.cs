@@ -49,6 +49,8 @@ namespace CodeTweets.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
+            
+
             return View();
         }
 
@@ -82,6 +84,18 @@ namespace CodeTweets.Controllers
         [AllowAnonymous]
         public async Task<bool> Register(RegisterViewModel model)
         {
+            if(!ModelState.IsValid)
+            {
+                foreach (ModelState modelState in ViewData.ModelState.Values)
+                {
+                    foreach (ModelError error in modelState.Errors)
+                    {
+                        Console.WriteLine(error.ErrorMessage);
+                    }
+                }
+               
+            }
+
             var user = new ApplicationUser { UserName = model.Email, Email = model.Email, user = model.user};
             var result = await UserManager.CreateAsync(user, model.Password);
             if (!result.Succeeded) return false;

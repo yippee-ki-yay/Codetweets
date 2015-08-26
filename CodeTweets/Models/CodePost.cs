@@ -11,6 +11,11 @@ namespace CodeTweets.Models
 {
     public class CodePost
     {
+        public CodePost()
+        {
+            date = DateTime.Now;
+        }
+
         public int id { get; set; }
         public string title { get; set; }
         public string content { get; set; }
@@ -19,10 +24,21 @@ namespace CodeTweets.Models
         public string userName { get; set; }
         public int like { get; set; }
         public int hate { get; set; }
-       // public DateTime date { get; set; }
+        public DateTime date { get; set; }
 
         public virtual List<HashTagPost> tagPosts { get; set; }
         public virtual List<UsersVotes> usersVotes { get; set; }
+    }
+
+    public class ProfilePostsViewModel
+    {
+        public int id { get; set; }
+        public string title { get; set; }
+        public string content { get; set; }
+        public int like { get; set; }
+        public int hate { get; set; }
+        public string liked { get; set; }
+        public string hated { get; set; }
     }
 
     /*public class CodePostDbContext: DbContext

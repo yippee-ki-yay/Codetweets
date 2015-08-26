@@ -1,6 +1,5 @@
 ﻿var FollowController = function($scope, $http)
 {
-    $scope.isDisabled = true;
 
     $scope.followed = "Follow";
     $scope.blocked = "Blocked";
@@ -73,10 +72,14 @@
             if(response.data === "success")
             {
                 var curr = $scope.getRow(user);
-                if (curr.isBlocked == "Block")
+                if (curr.isBlocked == "Block") {
                     curr.isBlocked = "Unblock";
-                else
+                    curr.isDisabled = true;
+                }
+                else {
                     curr.isBlocked = "Block";
+                    curr.isDisabled = false;
+                }
             }
         }, function (response) {
             alert('server not ok');

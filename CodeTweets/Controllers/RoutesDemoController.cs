@@ -101,7 +101,7 @@ namespace CodeTweets.Controllers
                 tmp.userName = user.user;
             }
 
-            // updateHashTags(tmp);
+             updateHashTags(tmp);
 
 
             // IdentityDbContext db = new IdentityDbContext();

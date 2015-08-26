@@ -1,4 +1,4 @@
-﻿var CodeTweets = angular.module('CodeTweets', ['ngRoute']);
+﻿var CodeTweets = angular.module('CodeTweets', ['ngRoute', 'infinite-scroll', 'ngSanitize']);
 
 CodeTweets.controller('LandingPageController', LandingPageController);
 CodeTweets.controller('LoginController', LoginController);

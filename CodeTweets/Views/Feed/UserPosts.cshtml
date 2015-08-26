@@ -1,21 +1,33 @@
 ﻿
-<div class="panel panel-info src_panel">
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
-                        Sort
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">Date</a></li>
-                        <li><a href="#">User</a></li>
-                    </ul>
-                </div>
+@section Scripts
+{
+    <script>
+       // $(document).ready(function () {
+           
+        var data = $("#postData");
+        console.log(data.length);
+     //   });
+</script>
+}
+
+<div ng-controller="CodePostController">
+    <div class="panel panel-info src_panel">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                            Sort
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="" ng-click="order('date')">Date</a></li>
+                            <li><a href="" ng-click="order('user')">User</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="col-lg-4 col-lg-offset-8>
-                <div class="dropdown">
+                <div class=" dropdown">
                     <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
                         Posts
                         <span class="caret"></span>
@@ -26,16 +38,16 @@
                         <li><a href="#">100</a></li>
                     </ul>
                 </div>
-                </div>
             </div>
         </div>
-<div class="container" style="background-color:#222222" ng-controller="CodePostController">
-    <div class="row">
+    </div>
+    <div class="container" style="background-color:#222222">
+        <div class="row">
 
-        <div class="col-md-12">
+            <div class="col-md-12">
 
-            <div class="panel">
-                <div class="panel-body" ng-repeat="post in posts">
+                <div class="panel" infinite-scroll="loadMore()">
+                    <div ng-repeat="post in posts" class="panel-body" >
 
                         <div class="row">
                             <br>
@@ -47,24 +59,25 @@
                                 <div class="row">
                                     <div class="col-xs-9">
                                         <h4><span class="label label-default"> @@ {{post.userName}}</span></h4><h4>
-                                            <small style="font-family:courier,'new courier';" class="text-muted">{{post.content}}<a href="#" class="text-muted"></a></small>
+                                            <small style="font-family:courier,'new courier';" class="text-muted" id="postData" ng-bind-html="post.content">{{post.content}}<a href="#" class="text-muted"></a></small>
                                         </h4>
                                     </div>
                                     <div class="col-xs-3">
-                                        <a href="" ng-click="like(post.id)">Like <span class="badge">{{post.like}}</span></a><br>
-                                        <a href="" ng-click="hate(post.id)">Hate <span class="badge">{{post.hate}}</span></a><br>
+                                        <button ng-click="like(post.id)" class="vote_btn">Like</button> <span class="badge">{{post.like}}</span><br>
+                                        <button ng-click="hate(post.id)" class="vote_btn">Hate</button> <span class="badge">{{post.hate}}</span> <br />
                                     </div>
                                 </div>
-                                <br><button class="btn btn-warning"  ng-click="retweet(post.id)">Retweet</button>
+                                <br><button class="btn btn-warning" ng-click="retweet(post.id)">Retweet</button>
                                 <button class="btn btn-danger">Replay</button><br>
                             </div>
                         </div>
                         <hr>
+                    </div>
                 </div>
-            </div>
 
 
 
-        </div><!--/col-12-->
+            </div><!--/col-12-->
+        </div>
     </div>
 </div>

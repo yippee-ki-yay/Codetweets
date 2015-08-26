@@ -13,7 +13,7 @@ namespace CodeTweets.Models
         public int CodePostId { get; set; }
 
         [Key, Column(Order = 1)]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         public virtual CodePost Post { get; set; }
 

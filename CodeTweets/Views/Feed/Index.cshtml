@@ -1,52 +1,66 @@
-﻿@model IEnumerable<CodeTweets.Models.CodePost>
-
+﻿
 <div ng-controller="CodePostController">
     <div class="panel panel-info src_panel">
         <div class="panel-body">
-            <div class="col-lg-10">
-                <input type="text" class="form-control" ng-model="searchText" />
-            </div>
-            <div class="col-lg-2">
-                <button type="button" class="btn btn-success" ng-click="search()">Search</button>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                            Sort
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="" ng-click="order('date')">Date</a></li>
+                            <li><a href="" ng-click="order('user')">User</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-lg-offset-8>
+                <div class=" dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                        Posts
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">15</a></li>
+                        <li><a href="#">50</a></li>
+                        <li><a href="#">100</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-
     <div class="container" style="background-color:#222222">
         <div class="row">
 
             <div class="col-md-12">
 
                 <div class="panel">
-                    <div class="panel-body">
+                    <div class="panel-body" ng-repeat="post in posts">
 
-                        @foreach (var item in Model)
-                        {
-                            <div class="row">
-                                <br>
-                                <div class="col-md-2 col-sm-3 text-center">
-                                    <a class="story-title" href="#"><img alt="" src="http://api.randomuser.me/portraits/thumb/men/58.jpg" style="width:80px;height:80px" class="img-circle"></a>
-                                </div>
-                                <div class="col-md-10 col-sm-9">
-                                    <h3>@Html.DisplayFor(modelItem => item.title)</h3>
-                                    <div class="row">
-                                        <div class="col-xs-9">
-                                            <h4><span class="label label-default"> @@  @item.userName</span></h4><h4>
-                                                <small style="font-family:courier,'new courier';" class="text-muted">@Html.DisplayFor(modelItem => item.content) <a href="#" class="text-muted"></a></small>
-                                            </h4>
-                                        </div>
-                                        <div class="col-xs-3">
-                                            <a href="#" ng-click="like('@item.id')">Like <span class="badge">@Html.DisplayFor(modelItem => item.like)</span></a><br>
-                                            <a href="" ng-click="hate('@item.id')">Hate <span class="badge">@Html.DisplayFor(modelItem => item.hate)</span></a><br>
-                                        </div>
-                                    </div>
-                                    <br><button class="btn btn-warning" ng-click="retweet('@item.id')">Retweet</button>
-                                    <button class="btn btn-danger">Replay</button><br>
-                                </div>
+                        <div class="row">
+                            <br>
+                            <div class="col-md-2 col-sm-3 text-center">
+                                <a class="story-title" href="#"><img alt="" src="http://api.randomuser.me/portraits/thumb/men/58.jpg" style="width:80px;height:80px" class="img-circle"></a>
                             </div>
-                            <hr>
-
-                        }
+                            <div class="col-md-10 col-sm-9">
+                                <h3>{{post.title}}</h3>
+                                <div class="row">
+                                    <div class="col-xs-9">
+                                        <h4><span class="label label-default"> @@ {{post.userName}}</span></h4><h4>
+                                            <small style="font-family:courier,'new courier';" class="text-muted">{{post.content}}<a href="#" class="text-muted"></a></small>
+                                        </h4>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button ng-click="like(post.id)" class="vote_btn">Like</button> <span class="badge">{{post.like}}</span><br>
+                                        <button ng-click="hate(post.id)" class="vote_btn">Hate</button> <span class="badge">{{post.hate}}</span> <br />
+                                    </div>
+                                </div>
+                                <br><button class="btn btn-warning" ng-click="retweet(post.id)">Retweet</button>
+                                <button class="btn btn-danger">Replay</button><br>
+                            </div>
+                        </div>
+                        <hr>
                     </div>
                 </div>
 

@@ -210,6 +210,14 @@ input[type="text"] {
   border-bottom-right-radius: 0;
 }
 */
+
+.vote_btn
+{
+    padding: 0;
+    border: none;
+    background: none;
+}
+
 .reg_btn
 {
     margin-top: 15px;
