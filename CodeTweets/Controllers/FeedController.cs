@@ -128,27 +128,48 @@ namespace CodeTweets.Controllers
             else //all posts of current users
                 jsonList = getFollowedPosts(currentUser);
 
+
+            var postArr = jsonList.ToArray();
+
+            //if no post found return empty
+            if (postArr.Length == 0)
+                return Content("", "application/json");
+
             List<ProfilePostsViewModel> profileList = new List<ProfilePostsViewModel>();
 
-            foreach(CodePost post in jsonList)
+
+            for(int i = cnt; i < postArr.Length; ++i)
             {
-                ProfilePostsViewModel tmp = new ProfilePostsViewModel();
+                if(i < cnt+5)
+                {
+                    ProfilePostsViewModel tmp = new ProfilePostsViewModel();
 
-                tmp.id = post.id;
-                tmp.title = post.title;
-                tmp.content = post.content;
-                tmp.like = post.like;
-                tmp.hate = post.hate;
-                tmp.userName = post.userName;
+                    CodePost post = postArr[i];
 
-                //uzmemo iz baze votova da li je korisnik na ovom postu lupio like/hate i saljemo ka klijentu
-                //TODO
+                    tmp.id = post.id;
+                    tmp.title = post.title;
+                    tmp.content = post.content;
+                    tmp.like = post.like;
+                    tmp.hate = post.hate;
+                    tmp.userName = post.userName;
 
-                tmp.commentList = from c in db.postComments.ToList()
-                               where c.CodePostId == post.id
-                               select c.Comment;
+                    //uzmemo iz baze votova da li je korisnik na ovom postu lupio like/hate i saljemo ka klijentu
 
-                profileList.Add(tmp);
+                   
+
+                    var liked = (db.votes.ToList().Find(v => v.CodePostId == post.id && v.UserId == currentUser.Id && v.Type == 0));
+                    var hated = (db.votes.ToList().Find(v => v.CodePostId == post.id && v.UserId == currentUser.Id && v.Type == 1));
+
+                    tmp.liked = ( liked != null) ? "You liked this":"Like";
+                    tmp.hated = (hated != null) ? "You hate this" : "Hate";
+
+                    tmp.commentList = from c in db.postComments.ToList()
+                                      where c.CodePostId == post.id
+                                      select c.Comment;
+
+                    profileList.Add(tmp);
+                }
+              
             }
 
             //Post sorting by date and user name
@@ -302,16 +323,16 @@ namespace CodeTweets.Controllers
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
-            foreach (CodePost post in db.posts.ToList())
-            {
-                if(post.id == id)
+            var post = db.posts.ToList().Find(p => p.id == id);
+
+            if (post != null)
                 {
 
                     var res = currentUser.usersVotes.Find(user => user.UserId == currentUser.Id && post.id == user.CodePostId);
 
                     if(res == null)
                     {
-                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post });
+                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post, Type = 0});
 
                         post.like++;
                         db.SaveChanges();
@@ -320,34 +341,63 @@ namespace CodeTweets.Controllers
                         
                     
                 }
-            }
+            
 
             return "fail";
         }
+
+        [HttpPost]
+        public string Unlike(int id)
+        {
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
+            var currentUser = manager.FindById(User.Identity.GetUserId());
+
+            var post = db.posts.ToList().Find(p => p.id == id);
+
+            if (post != null)
+            {
+                var res = currentUser.usersVotes.Find(user => user.UserId == currentUser.Id && post.id == user.CodePostId);
+
+                if (res != null)
+                {
+                    db.votes.Remove(res);
+                    post.like--;
+                    db.SaveChanges();
+
+                    return "success";
+                }
+          
+            }
+
+         
+
+            return "fail";
+        }
+
 
         //Like is called by angular to update hate count on post
         [HttpPost]
         public string Hate(int id)
         {
-            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
-            foreach (CodePost post in db.posts.ToList())
-            {
-                if (post.id == id)
+            var post = db.posts.ToList().Find(p => p.id == id);
+
+               if (post != null)
                 {
                     var res = currentUser.usersVotes.Find(user => user.UserId == currentUser.Id && post.id == user.CodePostId);
 
                     if (res == null)
                     {
-                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post });
+                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post, Type = 1});
 
                         post.hate++;
                         db.SaveChanges();
                         return "success";
                     }
                 }
-            }
+            
 
             return "fail";
         }
@@ -372,7 +422,7 @@ namespace CodeTweets.Controllers
         }
 
         [HttpPost]
-        public string Reply(int postId, string commentContent)
+        public JsonResult Reply(int postId, string commentContent)
         {
             //find the post
             CodePost currPost = db.posts.ToList().Find(x => x.id == postId);
@@ -385,10 +435,10 @@ namespace CodeTweets.Controllers
 
                 db.SaveChanges();
 
-                return "success";
+                return Json(newComment);
             }
 
-            return "fail";
+            return Json("fail");
         }
 
         //we take the post id you want to retweet and add to current user post list with @originalPoster inserted
@@ -419,5 +469,7 @@ namespace CodeTweets.Controllers
 
             return "fail";
         }
+
+
     }
 }

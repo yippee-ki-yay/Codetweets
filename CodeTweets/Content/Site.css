@@ -211,6 +211,11 @@ input[type="text"] {
 }
 */
 
+.settings-background
+{
+    background-color: white;
+}
+
 .vote
 {
     padding-right:220px;

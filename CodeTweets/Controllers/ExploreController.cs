@@ -15,7 +15,9 @@ namespace CodeTweets.Controllers
 {
     public class ExploreController : Controller
     {
-        //TODO: don't list the users that you already follow 
+
+        ApplicationDbContext db = new ApplicationDbContext();
+
         // GET: Explore
         [Authorize]
         public ActionResult Index()
@@ -30,7 +32,7 @@ namespace CodeTweets.Controllers
         }
 
         [HttpPost]
-        public ContentResult UsersJson()
+        public ContentResult UsersJson(string searchText, string userType)
         {
             string userId = User.Identity.GetUserId();
 
@@ -39,7 +41,43 @@ namespace CodeTweets.Controllers
 
             var UsersContext = new ApplicationDbContext();
 
-            var listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
+            List<ApplicationUser> listUsers = null;
+
+            if(searchText != null)
+            {
+                listUsers = UsersContext.Users.Where(x => x.Id != userId && x.user.Contains(searchText)).ToList();
+            }
+            else if(!String.IsNullOrEmpty(userType))
+            {
+                if(userType.Equals("All"))
+                {
+                    listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
+                }
+                else if(userType.Equals("Following"))
+                {
+                    listUsers = currentUser.followList;
+                }
+                else if (userType.Equals("Followers"))
+                {
+                    List<ApplicationUser> tmpList = UsersContext.Users.ToList();
+
+                    listUsers = new List<ApplicationUser>();
+
+                    foreach (ApplicationUser user in tmpList)
+                    {
+                        var tmp = user.followList.Find(u => u.Id == currentUser.Id);
+
+                        if (tmp != null)
+                            listUsers.Add(user);
+                    }
+                }
+                else if (userType.Equals("Blocked"))
+                {
+                    listUsers = currentUser.blockedList;
+                }
+            }
+            else
+                listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
 
             //including additional information if the users are blocked/followed
             List<ExploreUsersViewModel> exploreList = new List<ExploreUsersViewModel>();

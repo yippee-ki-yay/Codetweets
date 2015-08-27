@@ -2,9 +2,7 @@
 @section Scripts
 {
     <script>
-       // $(document).ready(function () {
-           
-     //   });
+
 </script>
 }
 
@@ -57,38 +55,31 @@
                                 <div class="row">
                                     <div class="col-xs-9">
                                         <h4><span class="label label-default"> @@ {{post.userName}}</span></h4><h4>
-                                            <small  class="text-muted" id="postData" ng-bind-html="post.content">{{post.content}}<a href="#" class="text-muted"></a></small>
+                                            <small  class="text-muted" id="postData" >{{post.content}}<a href="#" class="text-muted"></a></small>
                                         </h4>
                                     </div>
                                 </div>
                                 <br><button class="btn btn-warning" ng-click="retweet(post.id)">Retweet</button>
-                                <button class="btn btn-danger" data-toggle="modal" data-target="#myModal">Reply</button>
+                                <button class="btn btn-danger" ng-click="post.newComment =! post.newComment">Reply</button>
                                 <button class="btn btn-link"  ng-click="post.showComments =! post.showComments">List Comments </button>
                            
                                  <div class="pull-right vote">
-                                    <span class="vote_single"><button ng-click="like(post.id)" class="vote_btn">Like</button> <span class="badge like">{{post.like}}</span></span>
-                                    <button ng-click="hate(post.id)" class="vote_btn">Hate</button> <span class="badge hate">{{post.hate}}</span>
+                                    <span class="vote_single"><button ng-click="like(post.id)" class="vote_btn">{{post.liked}}</button> <span class="badge like">{{post.like}}</span></span>
+                                    <button ng-click="hate(post.id)" class="vote_btn">{{post.hated}}</button> <span class="badge hate">{{post.hate}}</span>
                                 </div>
                                 </div>
 
-                            <div id="myModal" class="modal fade" role="dialog" ng-controller="CodePostController">
-                                <div class="modal-dialog">
+                            <div ng-show="post.newComment" class="col-md-8 col-md-offset-2">
 
-                                    <!-- Modal content-->
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                            <h4 class="modal-title">Add new Comment to : {{post.userName}}</h4>
+                                        <div>
+                                            <h4 class="modal-title">Nobody really wants your comments but go ahead</h4>
                                         </div>
-                                        <div class="modal-body">
+                                        <div>
                                             <textarea id="textarea" name="textarea" class="form-control" ng-model="commentText"> </textarea>
                                         </div>
-                                        <div class="modal-footer">
-                                            <button ng-click="reply(post.id)" type="button" class="btn btn-default" data-dismiss="modal">Submit</button>
+                                        <div>
+                                            <button ng-click="reply(post.id, commentText)" type="button" class="btn btn-default" >Add Comment</button>
                                         </div>
-                                    </div>
-
-                                </div>
                             </div>
 
                             <div class="col-md-8 col-md-offset-2" ng-show="post.showComments">

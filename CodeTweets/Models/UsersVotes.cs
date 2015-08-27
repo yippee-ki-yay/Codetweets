@@ -15,6 +15,8 @@ namespace CodeTweets.Models
         [Key, Column(Order = 1)]
         public string UserId { get; set; }
 
+        public int Type { get; set; }
+
         public virtual CodePost Post { get; set; }
 
         public virtual ApplicationUser User { get; set; }

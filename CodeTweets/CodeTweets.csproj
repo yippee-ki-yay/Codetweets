@@ -301,6 +301,7 @@
     <Content Include="Views\Explore\Index.cshtml" />
     <Content Include="Views\Feed\UserPage.cshtml" />
     <Content Include="Views\Feed\UserPosts.cshtml" />
+    <Content Include="Views\Home\Settings.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

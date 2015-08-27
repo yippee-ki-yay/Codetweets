@@ -1,4 +1,4 @@
-﻿var CodePostController = function($scope, $http, $window, $location)
+﻿var CodePostController = function($scope, $http, $window, $location, $interval)
 {
     var placeholder = 'some data';
 
@@ -29,7 +29,7 @@
 
 
     $scope.loadData = function() {
-        $http.post('/Feed/getUserPosts', { hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'] })
+        $http.post('/Feed/getUserPosts', { hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'], count: $scope.scroll.count })
            .then(function (response) {
                $scope.posts = response.data;
                $scope.scroll.count = $scope.posts.length;
@@ -37,6 +37,7 @@
                for (var i = 0; i < $scope.posts.length; ++i) {
                    $scope.posts[i].content = $scope.posts[i].content.replace(/\#(\S+)/g, "<a href=\"/Feed/UserPosts?hashtag=$1\"> $1 </a>");
                    $scope.posts[i].showComments = false;
+                   $scope.posts[i].newComment = false;
                }
 
 
@@ -45,7 +46,10 @@
            });
     }
 
-    $scope.loadData();
+   // $scope.loadData();
+
+    //refresh the feed every 20 seconds
+    //$interval($scope.loadData(), 2000);
 
     /*$http.post('/Feed/getUserPosts', {type:"feed"})
        .then(function (response) {
@@ -55,7 +59,7 @@
        });*/
     
 
-   /* $scope.loadMore = function ()
+    $scope.loadMore = function ()
     {
         console.log("skrolaj");
 
@@ -64,15 +68,19 @@
 
         $scope.scroll.busy = true;
 
-        $http.post('/Feed/getUserPosts', { count: $scope.scroll.count })
+        console.log($scope.scroll.count);
+
+        $http.post('/Feed/getUserPosts', { hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'], count: $scope.scroll.count })
       .then(function (response) {
           for (var i = 0; i < response.data.length; ++i)
           {
-              if ($scope.posts != undefined)
-              {
-                  $scope.posts.push(response.data[i]);
-                  $scope.scroll.busy = false;
+              if ($scope.posts == undefined) {
+                  $scope.posts = [];
               }
+
+              $scope.posts.push(response.data[i]);
+              $scope.scroll.busy = false;
+              
    
           }
           $scope.scroll.count += 5;
@@ -81,8 +89,7 @@
           alert('server not ok');
       });
 
-        console.log('get more data');
-    }*/
+    }
 
     //tweet.replace(/(\#\S+)/g, "<a href=\"\"> $1 </a>");
 
@@ -142,16 +149,33 @@
 
     $scope.like = function(post_id)
     {
-        $http.post('/Feed/Like', { "id": post_id})
-       .then(function (response) {
-           if (response.data === "success")
-           {
-               var curr = $scope.getRow(post_id);
-               curr.like++;
-           }
-       }, function (response) {
-           alert('server not ok');
-       });
+        var curr = $scope.getRow(post_id);
+
+        if (curr.liked === "You liked this")
+        {
+           $http.post('/Feed/Unlike', { "id": post_id })
+           .then(function (response) {
+               if (response.data === "success") {
+                   curr.like--;
+                   curr.liked = "Like";
+               }
+           }, function (response) {
+               alert('server not ok');
+           });
+        }
+        else
+        {
+           $http.post('/Feed/Like', { "id": post_id })
+          .then(function (response) {
+              if (response.data === "success") {
+                  curr.like++;
+                  curr.liked = "You liked this";
+              }
+          }, function (response) {
+              alert('server not ok');
+          });
+        }
+   
     }
 
     $scope.listComments = function(postId)
@@ -166,13 +190,15 @@
            });
     }
 
-    $scope.reply = function(postId)
+    $scope.reply = function(postId, txt)
     {
-        $http.post('/Feed/Reply', { "postId": postId, "commentContent": $scope.commentText })
+        $http.post('/Feed/Reply', { "postId": postId, "commentContent": txt })
             .then(function (response) {
-                if (response.data === "success") {
-                    $scope.loadData();
-                }
+                var post = $scope.getRow(postId);
+                post.commentList.push(response.data);
+                post.newComment = false;
+                post.showComments = true;
+                $scope.commentText = "";
             }, function (response) {
                 alert('server not ok');
             });
@@ -180,12 +206,17 @@
 
     $scope.hate = function(post_id)
     {
+        var curr = $scope.getRow(post_id);
+
+        if (curr.hated === "You hate this")
+            return;
+
         $http.post('/Feed/Hate', { "id": post_id })
               .then(function (response) {
                   if(response.data === "success")
                   {
-                      var curr = $scope.getRow(post_id);
                       curr.hate++;
+                      curr.hated = "You hate this";
                   }
               }, function (response) {
                   alert('server not ok');
@@ -203,4 +234,4 @@
     }
 }
 
-CodePostController.$inject = ['$scope', '$http', '$window', '$location'];
+CodePostController.$inject = ['$scope', '$http', '$window', '$location', '$interval'];

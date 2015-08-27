@@ -45,8 +45,8 @@ namespace CodeTweets.Models
         public string userName { get; set; }
         public int like { get; set; }
         public int hate { get; set; }
-      //  public string liked { get; set; }
-      //  public string hated { get; set; }
+        public string liked { get; set; }
+        public string hated { get; set; }
 
         public IEnumerable<Comment> commentList { get; set; }
 

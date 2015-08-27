@@ -4,16 +4,22 @@
     $scope.followed = "Follow";
     $scope.blocked = "Blocked";
 
+    $scope.userType = "All";
+
     $scope.row = {
         show  : false
     };
 
-    $http.post('/Explore/UsersJson')
-        .then(function (response) {
-            $scope.AllUsers = response.data;
-        }, function (response) {
-        alert('server not ok');
-        });
+    $scope.getUsers = function () {
+        $http.post('/Explore/UsersJson', { "searchText": $scope.searchText, "userType": $scope.userType })
+            .then(function (response) {
+                $scope.AllUsers = response.data;
+            }, function (response) {
+                alert('server not ok');
+            });
+    }
+
+    $scope.getUsers();
 
     $scope.search = function()
     {
