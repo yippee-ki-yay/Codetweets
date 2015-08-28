@@ -59,6 +59,13 @@ namespace CodeTweets.Models
         public bool isDisabled { get; set; }
     }
 
+    public class UserChatViewModel
+    {
+        public string chatId { get; set; }
+        public string userId { get; set; }
+        public string name { get; set; }
+    }
+
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 
@@ -70,6 +77,7 @@ namespace CodeTweets.Models
         public DbSet<UsersFollow> followedUsers { get; set; }
         public DbSet<CommentPost> postComments { get; set; }
         public DbSet<Comment> comments { get; set; }
+        public DbSet<Message> messages { get; set; }
 
         public ApplicationDbContext()
             : base("ApplicationDbContext", throwIfV1Schema: false)

@@ -1,4 +1,4 @@
-﻿var CodeTweets = angular.module('CodeTweets', ['ngRoute', 'infinite-scroll', 'ngSanitize']);
+﻿var CodeTweets = angular.module('CodeTweets', ['ngRoute', 'infinite-scroll', 'ngSanitize']), chat = $.connection.chatHub;
 
 CodeTweets.controller('LandingPageController', LandingPageController);
 CodeTweets.controller('LoginController', LoginController);
@@ -7,9 +7,12 @@ CodeTweets.controller('RegisterController', RegisterController);
 CodeTweets.controller('FollowController', FollowController);
 CodeTweets.controller('PostsController', PostsController);
 CodeTweets.controller('UsersController', UsersController);
+CodeTweets.controller('ChatController', ChatController);
 
 CodeTweets.factory('LoginFactory', LoginFactory);
 CodeTweets.factory('RegisterFactory', RegisterFactory);
+
+
 
 var configFunction = function ($routeProvider)
 {
