@@ -1,0 +1,19 @@
+﻿<div ng-controller="ChatHistoryController">
+    <h1>Chat history</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nick Name</th>
+                <th>Number of messages</th>
+                <th>New messages</th>
+            </tr>
+        </thead>
+        <tr ng-repeat="x in users">
+            <td><a href="/Feed/UserPosts?type={{x.userId}}" /> {{x.userName}}</td>
+            <td><button ng-click="loadChatHistory(x.userId)">Chat History</button></td>
+       </tr>
+    </table>
+
+
+</div>

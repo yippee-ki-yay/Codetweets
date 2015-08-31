@@ -186,6 +186,7 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\ChatController.cs" />
     <Compile Include="Controllers\ExploreController.cs" />
     <Compile Include="Controllers\FeedController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -259,6 +260,7 @@
     <Content Include="Scripts\chat.js" />
     <Content Include="Scripts\CodeTweets.js" />
     <Content Include="Scripts\Controllers\ChatController.js" />
+    <Content Include="Scripts\Controllers\ChatHistoryController.js" />
     <Content Include="Scripts\Controllers\CodePostController.js" />
     <Content Include="Scripts\Controllers\FollowController.js" />
     <Content Include="Scripts\Controllers\LandingPageController.js" />
@@ -318,6 +320,7 @@
     <Content Include="Views\Feed\UserPosts.cshtml" />
     <Content Include="Views\Home\Settings.cshtml" />
     <Content Include="Views\Home\Chat.cshtml" />
+    <Content Include="Views\Home\Messages.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

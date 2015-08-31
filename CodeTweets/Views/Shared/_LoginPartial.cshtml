@@ -7,6 +7,7 @@
             @Html.AntiForgeryToken()
 
             <ul class="nav navbar-nav navbar-right">
+                <li><a href="/Home/Messages">Messages <span class="badge">{{unseenMsgNumber}}</span> </a></li>
                 <li><a href="/Home/Settings">Settings</a></li>
                <li> @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" }) </li>
                 <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>

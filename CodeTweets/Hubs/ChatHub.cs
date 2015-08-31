@@ -13,7 +13,7 @@ namespace CodeTweets.Hubs
     {
         static List<UserChatViewModel> chatUsers = new List<UserChatViewModel>();
 
-        ApplicationDbContext db = new ApplicationDbContext();
+        static ApplicationDbContext db = new ApplicationDbContext();
 
         public void ConnectUser()
         {
@@ -21,13 +21,23 @@ namespace CodeTweets.Hubs
 
             var user = db.Users.ToList().Find(appUser => appUser.Email == username);
 
+            if (user == null)
+                return;
+
             if (user != null)
                 username = user.user;
 
             var u = chatUsers.Find(ur => ur.userId == user.Id);
 
-            if(u == null)
-                chatUsers.Add(new UserChatViewModel() { userId = user.Id, chatId = Context.User.Identity.Name, name = user.user});
+            if (u == null)
+                chatUsers.Add(new UserChatViewModel() { userId = user.Id, chatId = Context.User.Identity.Name, name = user.user, appUser = user});
+        }
+
+        public void isTyping(string userId)
+        {
+            var u = chatUsers.Find(user => user.userId == userId);
+
+            Clients.User(u.chatId).showTyping(u.name);
         }
 
         public void Send(string name, string message)
@@ -48,21 +58,34 @@ namespace CodeTweets.Hubs
 
         public void SendPrivateMessage(string message, string userId)
         {
-            string username = Context.User.Identity.Name;
-            var currentUser = db.Users.ToList().Find(usr => usr.Email == username);
-
-            if (currentUser != null)
-                username = currentUser.user;
-
-
-           // Clients.Caller.sendPrivateMessage();
-
-            var u = chatUsers.Find(user => user.userId == userId);
-
-            if (u != null)
+            using (ApplicationDbContext db = new ApplicationDbContext())
             {
-                Clients.User(u.chatId).sendPrivateMessage(message, currentUser.user, "notCurrentUser");
-                Clients.User(Context.User.Identity.Name).sendPrivateMessage(message, currentUser.user, "CurrentUser");
+                string username = Context.User.Identity.Name;
+                var currentUser = db.Users.ToList().Find(usr => usr.Email == username);
+
+                if (currentUser != null)
+                    username = currentUser.user;
+
+                //u is the user i'm sending to
+                var u = chatUsers.Find(user => user.userId == userId);
+
+                //other user Name
+                string sendToUserName = db.Users.ToList().Find(usr => usr.Id == userId).user;
+
+                if (u != null)
+                {
+                    db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = u.appUser.Id, seen = true });
+
+                    Clients.User(u.chatId).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "notCurrentUser");
+                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "CurrentUser");
+                }
+                else
+                {
+                    db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = userId, seen = false });
+                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, sendToUserName, message, currentUser.user, "CurrentUser");
+                }
+
+                db.SaveChanges();
             }
         }
     }

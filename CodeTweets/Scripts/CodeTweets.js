@@ -8,6 +8,7 @@ CodeTweets.controller('FollowController', FollowController);
 CodeTweets.controller('PostsController', PostsController);
 CodeTweets.controller('UsersController', UsersController);
 CodeTweets.controller('ChatController', ChatController);
+CodeTweets.controller('ChatHistoryController', ChatHistoryController);
 
 CodeTweets.factory('LoginFactory', LoginFactory);
 CodeTweets.factory('RegisterFactory', RegisterFactory);

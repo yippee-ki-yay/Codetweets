@@ -40,7 +40,7 @@
             // Start the connection.
             $.connection.hub.start().done(function () {
 
-                chat.server.connectUser();
+              
 
                 $('#sendmessage').click(function () {
                     // Call the Send method on the hub.
@@ -95,7 +95,14 @@
     <div class="container body-content">
         @RenderBody()
 
+        <div class="container" id="chatStrip">
+
+
+        </div>
+
     </div>
+
+  
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-route.min.js"></script>

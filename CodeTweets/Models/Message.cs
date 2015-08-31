@@ -15,9 +15,11 @@ namespace CodeTweets.Models
         public int id { get; set; }
         public string content { get; set; }
 
+        public bool seen { get; set; }
+
         public DateTime date { get; set; }
 
-        public ApplicationUser fromUser { get; set; }
-        public ApplicationUser toUser { get; set; }
+        public string fromUserId { get; set; }
+        public string toUserId { get; set; }
     }
 }

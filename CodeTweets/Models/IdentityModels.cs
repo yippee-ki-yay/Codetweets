@@ -48,6 +48,19 @@ namespace CodeTweets.Models
         }
     }
 
+
+    public class ChatMessageViewModel
+    {
+        public string fromId { get; set; }
+        public string toId { get; set; }
+
+        public string fromUser { get; set; }
+        public string toUser { get; set; }
+
+        public string msgState { get; set; }
+        public string content { get; set; }
+    }
+
     public class ExploreUsersViewModel
     {
         public string Id { get; set; }
@@ -59,11 +72,32 @@ namespace CodeTweets.Models
         public bool isDisabled { get; set; }
     }
 
+    public class UsersChatListViewModel
+    {
+        public string userId { get; set; }
+        public string userName { get; set; }
+        public string msgNumber { get; set; }
+        public string unreadMsg { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            UsersChatListViewModel m = obj as UsersChatListViewModel;
+            return m.userId == this.userId;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.userId.GetHashCode();
+        }
+
+    }
+
     public class UserChatViewModel
     {
         public string chatId { get; set; }
         public string userId { get; set; }
         public string name { get; set; }
+        public ApplicationUser appUser { get; set; }
     }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
