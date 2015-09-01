@@ -152,7 +152,7 @@ namespace CodeTweets.Controllers
                     tmp.like = post.like;
                     tmp.hate = post.hate;
                     tmp.userName = post.userName;
-
+                    tmp.userImgPath = post.userImgPath;
                     //uzmemo iz baze votova da li je korisnik na ovom postu lupio like/hate i saljemo ka klijentu
 
                    

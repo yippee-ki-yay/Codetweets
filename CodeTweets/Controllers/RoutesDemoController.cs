@@ -100,6 +100,7 @@ namespace CodeTweets.Controllers
                 tmp.votes = 0;
                 tmp.user_id = user.Id;
                 tmp.userName = user.user;
+                tmp.userImgPath = currentUser.userImgPath;
             }
 
              updateHashTags(tmp);

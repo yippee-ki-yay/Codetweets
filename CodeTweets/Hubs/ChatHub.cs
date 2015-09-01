@@ -6,6 +6,7 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.Identity;
 using CodeTweets.Models;
 using Microsoft.AspNet.Identity.EntityFramework;
+using System.Threading.Tasks;
 
 namespace CodeTweets.Hubs
 {
@@ -30,14 +31,17 @@ namespace CodeTweets.Hubs
             var u = chatUsers.Find(ur => ur.userId == user.Id);
 
             if (u == null)
-                chatUsers.Add(new UserChatViewModel() { userId = user.Id, chatId = Context.User.Identity.Name, name = user.user, appUser = user});
+                chatUsers.Add(new UserChatViewModel() { userId = user.Id, chatId = Context.User.Identity.Name, name = user.user, appUser = user, userImagePath = user.userImgPath});
         }
 
         public void isTyping(string userId)
         {
-            var u = chatUsers.Find(user => user.userId == userId);
+            var u = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
 
-            Clients.User(u.chatId).showTyping(u.name);
+            var otherUser = chatUsers.Find(user => user.userId == userId);
+
+            if(u != null && otherUser != null)
+                Clients.User(otherUser.chatId).showTyping(u.name);
         }
 
         public void Send(string name, string message)
@@ -55,6 +59,24 @@ namespace CodeTweets.Hubs
             Clients.All.addNewMessageToPage(username, message);
         }
 
+
+        public string isConnected(string userId)
+        {
+            UserChatViewModel currUser = chatUsers.Find(user => user.userId == userId);
+
+            return (currUser == null) ? "Offline" : "Online";
+        }
+
+
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            UserChatViewModel currUser = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
+
+            if (currUser != null)
+                chatUsers.Remove(currUser);
+
+            return base.OnDisconnected(stopCalled);
+        }
 
         public void SendPrivateMessage(string message, string userId)
         {
@@ -76,13 +98,13 @@ namespace CodeTweets.Hubs
                 {
                     db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = u.appUser.Id, seen = true });
 
-                    Clients.User(u.chatId).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "notCurrentUser");
-                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "CurrentUser");
+                    Clients.User(u.chatId).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "notCurrentUser", u.userImagePath);
+                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "CurrentUser", currentUser.userImgPath);
                 }
                 else
                 {
                     db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = userId, seen = false });
-                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, sendToUserName, message, currentUser.user, "CurrentUser");
+                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, sendToUserName, message, currentUser.user, "CurrentUser", currentUser.userImgPath);
                 }
 
                 db.SaveChanges();

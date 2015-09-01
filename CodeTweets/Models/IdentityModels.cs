@@ -25,6 +25,8 @@ namespace CodeTweets.Models
 
         public string user { get; set; }
 
+        public string userImgPath { get; set; }
+
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
@@ -70,6 +72,7 @@ namespace CodeTweets.Models
         public string isFollowed { get; set; }
         public string isBlocked { get; set; }
         public bool isDisabled { get; set; }
+        public bool isChat { get; set; }
     }
 
     public class UsersChatListViewModel
@@ -78,6 +81,7 @@ namespace CodeTweets.Models
         public string userName { get; set; }
         public string msgNumber { get; set; }
         public string unreadMsg { get; set; }
+        public int unseenMsgCount { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -97,6 +101,7 @@ namespace CodeTweets.Models
         public string chatId { get; set; }
         public string userId { get; set; }
         public string name { get; set; }
+        public string userImagePath { get; set; }
         public ApplicationUser appUser { get; set; }
     }
 

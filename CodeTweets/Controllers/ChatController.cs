@@ -12,14 +12,17 @@ namespace CodeTweets.Controllers
     public class ChatController : Controller
     {
 
-        ApplicationDbContext db = new ApplicationDbContext();
-
         //returns a list of users you have exchanged messages with
         [HttpPost]
         public JsonResult getUsersITalkedTo()
         {
+            ApplicationDbContext db = new ApplicationDbContext();
+
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
+
+            if (currentUser == null)
+                return Json("");
 
             HashSet<UsersChatListViewModel> users = new HashSet<UsersChatListViewModel>();
 
@@ -39,8 +42,10 @@ namespace CodeTweets.Controllers
                     using (ApplicationDbContext dbList = new ApplicationDbContext())
                     {
                         tmp.userName = dbList.Users.ToList().Find(usr => usr.Id == tmp.userId).user;
+                        tmp.unseenMsgCount = dbList.messages.Where(msg => msg.seen == false && tmp.userId == msg.toUserId && msg.fromUserId == currentUser.Id).Count();
                     }
-                       
+
+
                     tmp.msgNumber = "0";
                     tmp.unreadMsg = "non";
 
@@ -97,14 +102,22 @@ namespace CodeTweets.Controllers
         [HttpPost]
         public int getUnseenMessageNumber()
         {
-            int sum = 0;
 
             using (ApplicationDbContext db =  new ApplicationDbContext())
             {
-                sum = db.messages.Where(msg => msg.seen == false).Count();
+                var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
+                var currentUser = manager.FindById(User.Identity.GetUserId());
+
+                if (currentUser == null)
+                    return 0; ;
+
+                int sum = 0;
+
+                sum = db.messages.Where(msg => msg.seen == false && msg.toUserId == currentUser.Id).Count();
+
+                return sum;
             }
 
-            return sum;
         }
 
         [HttpPost]
@@ -113,6 +126,29 @@ namespace CodeTweets.Controllers
 
 
             return Json("");
+        }
+
+        [HttpPost]
+        public int setMessagesSeen(string toUser)
+        {
+            using (ApplicationDbContext db = new ApplicationDbContext())
+            {
+                var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
+                var currentUser = manager.FindById(User.Identity.GetUserId());
+
+
+                List<Message> unseenMessages = db.messages.Where( msg => msg.toUserId == currentUser.Id 
+                                               && msg.fromUserId == toUser && msg.seen == false).ToList();
+
+                //change the value of all set messages
+                unseenMessages.All(m => { m.seen = true; return true; });
+
+                db.SaveChanges();
+
+                return unseenMessages.Count;
+            }
+
+           
         }
   
     }

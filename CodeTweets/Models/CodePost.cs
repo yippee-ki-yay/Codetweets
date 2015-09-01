@@ -25,6 +25,7 @@ namespace CodeTweets.Models
         public int like { get; set; }
         public int hate { get; set; }
         public DateTime date { get; set; }
+        public string userImgPath { get; set; }
 
         public virtual IEnumerable<HashTagPost> tagPosts { get; set; }
         public virtual IEnumerable<UsersVotes> usersVotes { get; set; }
@@ -47,6 +48,7 @@ namespace CodeTweets.Models
         public int hate { get; set; }
         public string liked { get; set; }
         public string hated { get; set; }
+        public string userImgPath { get; set; }
 
         public IEnumerable<Comment> commentList { get; set; }
 

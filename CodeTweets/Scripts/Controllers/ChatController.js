@@ -2,6 +2,15 @@
     $scope.openChatWindows = 0;
     $scope.chatUserId = '';
 
+
+    $http.post('/Chat/getUsersITalkedTo')
+    .then(function (response) {
+        $scope.users = response.data;
+
+     }, function (response) {
+        alert('server not ok');
+ });
+
     $http.post('/Chat/getUnseenMessageNumber')
        .then(function (response) {
            $scope.unseenMsgNumber = response.data;
@@ -9,6 +18,55 @@
            alert('server not ok');
        });
 
+    $scope.setMessagesSeen = function(toUser)
+    {
+        $http.post('/Chat/setMessagesSeen', {toUser})
+              .then(function (response) {
+                  var num = response.data;
+                  $scope.unseenMsgNumber = $scope.unseenMsgNumber - num;
+              }, function (response) {
+                  alert('server not ok');
+              });
+    }
+
+    setInterval(function ()
+    {
+        console.log("interval");
+
+        $(".chat-window").each(function (index) {
+            
+            var text = $(this).find('.panel-title').text();
+            var title = $(this).find('.panel-title');
+            chat.server.isConnected($(this).find('#userId').text()).done(function (result) {
+
+                 text = text.replace(/(\()\S+(\))/, "$1" + result + "$2");
+                //text = "Whaaat";
+                title.text(text);
+            });
+        })
+    }
+        , 5000);
+
+    var idleTime = 0;
+    $(document).ready(function () {
+        //Increment the idle time counter every minute.
+        var idleInterval = setInterval(timerIncrement, 60000); // 1 minute
+
+        //Zero the idle timer on mouse movement.
+        $(this).mousemove(function (e) {
+            idleTime = 0;
+        });
+        $(this).keypress(function (e) {
+            idleTime = 0;
+        });
+    });
+
+    function timerIncrement() {
+        idleTime = idleTime + 1;
+        if (idleTime > 19) { // 20 minutes
+            window.location.reload();
+        }
+    }
 
     //when we send a message myname is the user you are sending to and name is your name
     //when you are receiving message myname is your name and name is the user sending the message
@@ -17,6 +75,9 @@
         $http.post('/Chat/getChatConversation', {'otherUserId':userId})
         .then(function (response) {
             var msgs = response.data;
+
+           
+                $scope.setMessagesSeen(userId);
 
             $.each(msgs, function(i, item) {
                 chat.client.sendPrivateMessage(item.toId, item.toUser, item.content, item.fromUser, item.msgState);
@@ -31,11 +92,11 @@
     {
         var sendWindow = $('#' + name);
 
-        sendWindow.append('<div>Is Typing...</div>');
+        sendWindow.append("<div class='row msg_container base_receive'>Is Typing...</div>");
 
     }
 
-    chat.client.sendPrivateMessage = function (id, myname, msg, name, me) {
+    chat.client.sendPrivateMessage = function (id, myname, msg, name, me, imgPath) {
 
         var newWindow = null;
         var currWindow = $('#' + myname); //find an open window with this name
@@ -53,13 +114,13 @@
         if (sendWindow.length != 0)
             newWindow = $("#" + name);
 
-        newWindow.append($scope.message(msg, name, me));
+        newWindow.append($scope.message(msg, name, me, imgPath));
     }
 
     $.connection.hub.start().done(function () { chat.server.connectUser(); });
 
     //generates msg html based on is it receive msg or sent
-    $scope.message = function (msg, name, me) {
+    $scope.message = function (msg, name, me, imgPath) {
         var msg_type = "";
 
         if (me === "CurrentUser")
@@ -68,7 +129,7 @@
             msg_type = "_receive";
 
         var avatar = "<div class='col-md-2 col-xs-2 avatar'> \
-                                   <img src='http://www.bitrebels.com/wp-content/uploads/2011/02/Original-Facebook-Geek-Profile-Avatar-1.jpg' class=' img-responsive '> \
+                                   <img src='/img/" + imgPath + "' class=' img-responsive '> \
                                </div>";
 
         var stringMsg = "<div class='col-xs-10 col-md-10'> \
@@ -99,26 +160,32 @@
 
         $scope.chatUserId = userId;
 
-        var chatHtml = "<div class='row chat-window col-md-3' id='chat_window_" + $scope.openChatWindows + "' style='margin-left:10px;'> \
+        chat.server.isConnected(userId).done(function (result) {
+           
+
+        if ($("#" + userName).length != 0)
+            return;
+
+        var chatHtml = "<div class='row chat-window col-md-2' id='chat_window_" + $scope.openChatWindows + "' style='margin-left:10px;'> \
                <div class='col-xs-12 col-md-12 '> \
-                   <div class='panel panel-default' data-id='lel'> \
+                   <div class='panel panel-default'> \
                       <div id='userId' style='display: none;'>" + userId + "</div>\
                        <div class='panel-heading top-bar'> \
                            <div class='col-md-8 col-xs-8'> \
-                               <h3 class='panel-title'><span class='glyphicon glyphicon-comment'></span> Chat - "+ userName + "</h3> \
+                               <h3 class='panel-title'><span class='glyphicon glyphicon-comment'></span> Chat - " + userName + " (" + result + ")</h3> \
                            </div> \
                            <div class='col-md-4 col-xs-4' style='text-align: right;'> \
-                               <a href='#'><span id='minim_chat_window' class='glyphicon glyphicon-minus icon_minim'></span></a> \
-                               <a href='#'><span class='glyphicon glyphicon-remove icon_close' data-id='chat_window_1'></span></a> \
+                               <a href='#'><span id='minim_chat_window' class='glyphicon glyphicon-minus icon_minim' data-id='" + $scope.openChatWindows + "'></span></a> \
+                               <a href='#'><span class='glyphicon glyphicon-remove icon_close' data-id='" + $scope.openChatWindows  + "'></span></a> \
                            </div> \
                        </div> \
                        <div class='panel-body msg_container_base' id='" + userName +"'> \
                        </div> \
                                    <div class='panel-footer'> \
                                <div class='input-group'> \
-                                   <input id='btn-input' type='text' class='form-control input-sm chat_input' placeholder='Write your message here...' /> \
+                                   <input id='btn-input' type='text' class='form-control input-sm chat_input' data-id='" + $scope.openChatWindows + "' placeholder='Write your message here...' /> \
                                    <span class='input-group-btn'> \
-                                       <button class='btn btn-primary btn-sm' id='btn-chat'>Send</button> \
+                                       <button class='btn btn-primary btn-sm' id='btn-chat' data-id='" + $scope.openChatWindows + "'>Send</button> \
                                    </span> \
                                </div> \
                            </div> \
@@ -129,15 +196,20 @@
        </div>";
 
         $("#chatStrip").append(chatHtml);
-        $("#chat_window_" + $scope.openChatWindows).css("margin-left", 300 * $scope.openChatWindows);
+        var windowWidth = $("#chat_window_" + $scope.openChatWindows).width();
+        $("#chat_window_" + $scope.openChatWindows).css("margin-left",  (windowWidth + 10) * $scope.openChatWindows);
 
         $scope.openChatWindows++;
+
+        });
     }
 
     $(document).on('keyup', '#btn-input', function (e) {
+        var currWindow = $('#chat_window_' + $(this).data('id'));
+
         if (e.keyCode === 13) {
-            chat.server.sendPrivateMessage($('#btn-input').val(), $('#userId').text());
-            $('#btn-input').val('').focus();
+            chat.server.sendPrivateMessage(currWindow.find('#btn-input').val(), currWindow.find('#userId').text());
+            currWindow.find('#btn-input').val('').focus();
         }
         else
         {
@@ -147,16 +219,21 @@
 
     $($document).on("click", "#btn-chat", function () {
 
-        chat.server.sendPrivateMessage($('#btn-input').val(), $('#userId').text());
-        $('#btn-input').val('').focus();
+        var currWindow = $('#chat_window_' + $(this).data('id'));
+
+        chat.server.sendPrivateMessage(currWindow.find('#btn-input').val(), currWindow.find('#userId').text());
+        currWindow.find('#btn-input').val('').focus();
 
     });
 
     $(document).on('click', '.icon_close', function (e) {
-        $(this).parent().parent().parent().parent().remove();
+       // $(this).parent().parent().parent().parent().remove();
 
-        var chatWin = $(this).parent().parent().parent().parent();
+        var currWindow = $(this).data('id');
+        $('#chat_window_' + currWindow).remove();
 
+        //var chatWin = $(this).parent().parent().parent().parent();
+        $scope.openChatWindows--;
        // $("#chat_window_1").remove();
     });
 
