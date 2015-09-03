@@ -26,13 +26,6 @@ namespace CodeTweets.Controllers
             return View();
         }
 
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
         public ActionResult Settings()
         {
             return View();
@@ -73,7 +66,8 @@ namespace CodeTweets.Controllers
 
                 using (ApplicationDbContext db = new ApplicationDbContext())
                 {
-                    var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
+                    var store = new UserStore<ApplicationUser>(db);
+                    var manager = new UserManager<ApplicationUser>(store);
                     var currentUser = manager.FindById(User.Identity.GetUserId());
 
                     //if the user already has an image
@@ -85,21 +79,13 @@ namespace CodeTweets.Controllers
                         currentUser.userImgPath = fileName;
 
                     db.SaveChanges();
+                    store.UpdateAsync(currentUser);
+                    store.Context.SaveChanges();
+                    
                 }
 
             }
         }
 
-        public ActionResult Chat()
-        {
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
     }
 }

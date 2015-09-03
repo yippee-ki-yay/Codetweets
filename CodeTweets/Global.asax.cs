@@ -18,7 +18,7 @@ namespace CodeTweets
             AreaRegistration.RegisterAllAreas();
             Database.SetInitializer<ApplicationDbContext>(new DatabaseInitializer());
             ApplicationDbContext db = new ApplicationDbContext();
-            db.Database.Initialize(true);
+           // db.Database.Initialize(true);
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);

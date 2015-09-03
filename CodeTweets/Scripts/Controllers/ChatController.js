@@ -1,7 +1,11 @@
 ﻿var ChatController = function ($scope, $http, $document) {
     $scope.openChatWindows = 0;
     $scope.chatUserId = '';
+    $scope.idleTime = 0;
+    $scope.typingTime = 0;
 
+
+    $.connection.hub.start().done(function () { chat.server.connectUser(); });
 
     $http.post('/Chat/getUsersITalkedTo')
     .then(function (response) {
@@ -20,7 +24,7 @@
 
     $scope.setMessagesSeen = function(toUser)
     {
-        $http.post('/Chat/setMessagesSeen', {toUser})
+        $http.post('/Chat/setMessagesSeen', {'toUser':toUser})
               .then(function (response) {
                   var num = response.data;
                   $scope.unseenMsgNumber = $scope.unseenMsgNumber - num;
@@ -29,44 +33,50 @@
               });
     }
 
-    setInterval(function ()
+    //checks users status is Online/Offline/Away
+    $scope.updateStatus = function ()
     {
-        console.log("interval");
-
         $(".chat-window").each(function (index) {
-            
+
             var text = $(this).find('.panel-title').text();
             var title = $(this).find('.panel-title');
             chat.server.isConnected($(this).find('#userId').text()).done(function (result) {
 
-                 text = text.replace(/(\()\S+(\))/, "$1" + result + "$2");
-                //text = "Whaaat";
+                text = text.replace(/(\()\S+(\))/, "$1" + result + "$2");
                 title.text(text);
             });
-        })
+        });
     }
-        , 5000);
 
-    var idleTime = 0;
-    $(document).ready(function () {
-        //Increment the idle time counter every minute.
-        var idleInterval = setInterval(timerIncrement, 60000); // 1 minute
+    setInterval($scope.updateStatus, 5000);
+ 
+        $scope.idleInterval = setInterval(timerIncrement, 1000); 
 
-        //Zero the idle timer on mouse movement.
-        $(this).mousemove(function (e) {
-            idleTime = 0;
+        $($document).mousemove(function (e) {
+            $scope.idleTime = 0;
+            chat.server.userBackOnline();
         });
-        $(this).keypress(function (e) {
-            idleTime = 0;
+        $($document).keypress(function (e) {
+            $scope.idleTime = 0;
+            $scope.typingTime = 0;
+            chat.server.userBackOnline();
         });
-    });
+   
 
-    function timerIncrement() {
-        idleTime = idleTime + 1;
-        if (idleTime > 19) { // 20 minutes
-            window.location.reload();
+        function timerIncrement() {
+            $scope.idleTime = $scope.idleTime + 1;
+            $scope.typingTime++;
+            if($scope.typingTime > 5)
+            {
+                $('#userId').each(function (index) {
+                    chat.server.notTyping($(this).text());
+                });
+            }
+
+            if ($scope.idleTime > 19) { 
+                chat.server.userAway();
+            }
         }
-    }
 
     //when we send a message myname is the user you are sending to and name is your name
     //when you are receiving message myname is your name and name is the user sending the message
@@ -80,7 +90,7 @@
                 $scope.setMessagesSeen(userId);
 
             $.each(msgs, function(i, item) {
-                chat.client.sendPrivateMessage(item.toId, item.toUser, item.content, item.fromUser, item.msgState);
+                chat.client.sendPrivateMessage(item.toId, item.toUser, item.content, item.fromUser, item.msgState, item.imgPath);
             })
 
         }, function (response) {
@@ -88,11 +98,23 @@
  });
     }
 
+
+    chat.client.removeTyping = function (name) {
+        var sendWindow = $('#' + name);
+
+        sendWindow.find('#typing').remove();
+
+    }
+
+    //show if the other user is typing
     chat.client.showTyping = function(name)
     {
         var sendWindow = $('#' + name);
 
-        sendWindow.append("<div class='row msg_container base_receive'>Is Typing...</div>");
+        //we remove it so we don't stack the messages
+        sendWindow.find('#typing').remove();
+
+        sendWindow.append("<div class='row msg_container base_receive' id='typing'>Is Typing...</div>");
 
     }
 
@@ -114,10 +136,13 @@
         if (sendWindow.length != 0)
             newWindow = $("#" + name);
 
-        newWindow.append($scope.message(msg, name, me, imgPath));
-    }
+        newWindow.find('#typing').remove();
 
-    $.connection.hub.start().done(function () { chat.server.connectUser(); });
+        newWindow.append($scope.message(msg, name, me, imgPath));
+
+        //if you load only specific number of messages this number wotn be a problem
+        newWindow.scrollTop(newWindow.height()+10000000);
+    }
 
     //generates msg html based on is it receive msg or sent
     $scope.message = function (msg, name, me, imgPath) {
@@ -160,8 +185,8 @@
 
         $scope.chatUserId = userId;
 
-        chat.server.isConnected(userId).done(function (result) {
-           
+        //chat.server.isConnected(userId).done(function (result) {
+        var result = "Online";
 
         if ($("#" + userName).length != 0)
             return;
@@ -196,12 +221,15 @@
        </div>";
 
         $("#chatStrip").append(chatHtml);
+
+        $scope.updateStatus();
+
         var windowWidth = $("#chat_window_" + $scope.openChatWindows).width();
         $("#chat_window_" + $scope.openChatWindows).css("margin-left",  (windowWidth + 10) * $scope.openChatWindows);
 
         $scope.openChatWindows++;
 
-        });
+       // });
     }
 
     $(document).on('keyup', '#btn-input', function (e) {
@@ -213,7 +241,8 @@
         }
         else
         {
-            chat.server.isTyping($('#userId').text());
+            chat.server.isTyping(currWindow.find('#userId').text());
+            //setTimeout(chat.server.notTyping(currWindow.find('#userId').text()), 3000);
         }
     });
 
@@ -227,14 +256,10 @@
     });
 
     $(document).on('click', '.icon_close', function (e) {
-       // $(this).parent().parent().parent().parent().remove();
-
         var currWindow = $(this).data('id');
         $('#chat_window_' + currWindow).remove();
 
-        //var chatWin = $(this).parent().parent().parent().parent();
         $scope.openChatWindows--;
-       // $("#chat_window_1").remove();
     });
 
 }

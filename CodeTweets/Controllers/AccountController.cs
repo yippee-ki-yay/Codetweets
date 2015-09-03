@@ -152,7 +152,7 @@ namespace testMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email , user = model.user};
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email , user = model.user, userImgPath = ""};
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {

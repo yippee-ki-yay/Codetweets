@@ -15,115 +15,115 @@ namespace CodeTweets.Controllers
 {
     public class ExploreController : Controller
     {
-
-        ApplicationDbContext db = new ApplicationDbContext();
-
-        // GET: Explore
+        //returns all the users except myself
         [Authorize]
         public ActionResult Index()
         {
             string userId = User.Identity.GetUserId();
 
-            var UsersContext = new ApplicationDbContext();
+            using (var UsersContext = new ApplicationDbContext())
+            {
+                IEnumerable<ApplicationUser> list = UsersContext.Users.Where(x => x.Id != userId).ToList();
 
-            IEnumerable<ApplicationUser> list = UsersContext.Users.Where(x => x.Id != userId).ToList();
+                return View(list);
+            }
 
-            return View(list);
+                
         }
 
+        //sends json to server of all the users excluing myself and with diffrent filtering options
         [HttpPost]
-        public ContentResult UsersJson(string searchText, string userType)
+        public JsonResult UsersJson(string searchText, string userType)
         {
             string userId = User.Identity.GetUserId();
 
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
 
-            var UsersContext = new ApplicationDbContext();
-
-            List<ApplicationUser> listUsers = null;
-
-            if(searchText != null)
+            using (var UsersContext = new ApplicationDbContext())
             {
-                listUsers = UsersContext.Users.Where(x => x.Id != userId && x.user.Contains(searchText)).ToList();
-            }
-            else if(!String.IsNullOrEmpty(userType))
-            {
-                if(userType.Equals("All"))
-                {
-                    listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
-                }
-                else if(userType.Equals("Following"))
-                {
-                    listUsers = currentUser.followList;
-                }
-                else if (userType.Equals("Followers"))
-                {
-                    List<ApplicationUser> tmpList = UsersContext.Users.ToList();
+                List<ApplicationUser> listUsers = null;
 
-                    listUsers = new List<ApplicationUser>();
-
-                    foreach (ApplicationUser user in tmpList)
+                if (searchText != null)
+                {
+                    listUsers = UsersContext.Users.Where(x => x.Id != userId && x.user.Contains(searchText)).ToList();
+                }
+                else if (!String.IsNullOrEmpty(userType))
+                {
+                    if (userType.Equals("All"))
                     {
-                        var tmp = user.followList.Find(u => u.Id == currentUser.Id);
+                        listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
+                    }
+                    else if (userType.Equals("Following"))
+                    {
+                        listUsers = currentUser.followList;
+                    }
+                    else if (userType.Equals("Followers"))
+                    {
+                        List<ApplicationUser> tmpList = UsersContext.Users.ToList();
 
-                        if (tmp != null)
-                            listUsers.Add(user);
+                        listUsers = new List<ApplicationUser>();
+
+                        foreach (ApplicationUser user in tmpList)
+                        {
+                            var tmp = user.followList.Find(u => u.Id == currentUser.Id);
+
+                            if (tmp != null)
+                                listUsers.Add(user);
+                        }
+                    }
+                    else if (userType.Equals("Blocked"))
+                    {
+                        listUsers = currentUser.blockedList;
                     }
                 }
-                else if (userType.Equals("Blocked"))
+                else
+                    listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
+
+                //including additional information if the users are blocked/followed
+                List<ExploreUsersViewModel> exploreList = new List<ExploreUsersViewModel>();
+
+                foreach (var user in listUsers)
                 {
-                    listUsers = currentUser.blockedList;
+                    ExploreUsersViewModel tmp = new ExploreUsersViewModel();
+
+                    var follow = currentUser.followList.Find(u => u.Id == user.Id);
+                    var block = currentUser.blockedList.Find(u => u.Id == user.Id);
+
+                    tmp.isFollowed = (follow != null) ? "Unfollow" : "Follow";
+                    tmp.isBlocked = (block != null) ? "Unblock" : "Block";
+                    tmp.Id = user.Id;
+                    tmp.user = user.user;
+                    tmp.UserName = user.UserName;
+                    tmp.isChat = false;
+
+                    exploreList.Add(tmp);
+
                 }
-            }
-            else
-                listUsers = UsersContext.Users.Where(x => x.Id != userId).ToList();
 
-            //including additional information if the users are blocked/followed
-            List<ExploreUsersViewModel> exploreList = new List<ExploreUsersViewModel>();
 
-            foreach (var user in listUsers)
-            {
-                ExploreUsersViewModel tmp = new ExploreUsersViewModel();
-
-                var follow = currentUser.followList.Find(u => u.Id == user.Id);
-                var block = currentUser.blockedList.Find(u => u.Id == user.Id);
-
-                tmp.isFollowed = (follow != null) ? "Unfollow" : "Follow";
-                tmp.isBlocked = (block != null) ? "Unblock" : "Block";
-                tmp.Id = user.Id;
-                tmp.user = user.user;
-                tmp.UserName = user.UserName;
-                tmp.isChat = false;
-
-                exploreList.Add(tmp);
-
+                return Json(exploreList);
             }
 
-            var list = JsonConvert.SerializeObject(exploreList,
-                                               Formatting.None,
-                                               new JsonSerializerSettings()
-                                               {
-                                                   ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                                               });
-            
-
-            return Content(list, "application/json");
+                
         }
 
+        //search method for users DEPRECATED?
         [HttpPost]
         public string UsersSearchJson(string searchText)
         {
             string userId = User.Identity.GetUserId();
 
-            var UsersContext = new ApplicationDbContext();
+            using (var UsersContext = new ApplicationDbContext())
+            {
+                IEnumerable<ApplicationUser> list = UsersContext.Users.Where(x => x.Id != userId && x.user.Contains(searchText)).ToList();
 
-            IEnumerable<ApplicationUser> list = UsersContext.Users.Where(x => x.Id != userId && x.user.Contains(searchText)).ToList();
+                var jsonSerialiser = new JavaScriptSerializer();
+                var json = jsonSerialiser.Serialize(list);
 
-            var jsonSerialiser = new JavaScriptSerializer();
-            var json = jsonSerialiser.Serialize(list);
-
-            return json;
+                return json;
+            }
+                
         }
     }
 }

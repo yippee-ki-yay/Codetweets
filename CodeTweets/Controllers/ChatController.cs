@@ -11,7 +11,6 @@ namespace CodeTweets.Controllers
 {
     public class ChatController : Controller
     {
-
         //returns a list of users you have exchanged messages with
         [HttpPost]
         public JsonResult getUsersITalkedTo()
@@ -84,7 +83,9 @@ namespace CodeTweets.Controllers
                     tmp.fromId = m.fromUserId;
                     tmp.toId = m.toUserId;
                     tmp.content = m.content;
-                    tmp.fromUser = db.Users.ToList().Find(u => u.Id == tmp.fromId).user;
+                    var user = db.Users.ToList().Find(u => u.Id == tmp.fromId);
+                    tmp.fromUser = user.user;
+                    tmp.imgPath = user.userImgPath;
                     tmp.toUser = db.Users.ToList().Find(u => u.Id == tmp.toId).user;
 
                     tmp.msgState = (currentUser.Id == tmp.fromId) ? "CurrentUser" : "notCurrentUser";
@@ -98,7 +99,7 @@ namespace CodeTweets.Controllers
             return Json(resultList);
         }
 
-
+        //gets the number of all the messages you havent seen
         [HttpPost]
         public int getUnseenMessageNumber()
         {
@@ -128,6 +129,7 @@ namespace CodeTweets.Controllers
             return Json("");
         }
 
+        //when the user has seen the messages change it's state
         [HttpPost]
         public int setMessagesSeen(string toUser)
         {

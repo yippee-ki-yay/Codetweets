@@ -9,10 +9,20 @@ using System;
 using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Principal;
 
 namespace CodeTweets.Models
 {
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
+
+    public class MyIdentityUser : IdentityUser
+    {
+        public MyIdentityUser() : base() { }
+
+        public string username { get; set; }
+
+    }
+
     public class ApplicationUser : IdentityUser
     {
         public virtual List<ApplicationUser> followList { get; set; }
@@ -32,6 +42,8 @@ namespace CodeTweets.Models
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
             var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
             // Add custom user claims here
+            userIdentity.AddClaim(new Claim("username", this.user));
+            userIdentity.AddClaim(new Claim("userImage", this.userImgPath));
             return userIdentity;
         }
     }
@@ -50,8 +62,24 @@ namespace CodeTweets.Models
         }
     }
 
+    public static class GenericPrincipalExtensions
+    {
+        public static ApplicationUser ApplicationUser(this IPrincipal user)
+        {
+            GenericPrincipal userPrincipal = (GenericPrincipal)user;
+            UserManager<ApplicationUser> userManager = new UserManager<Models.ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            if (userPrincipal.Identity.IsAuthenticated)
+            {
+                return userManager.FindById(userPrincipal.Identity.GetUserId());
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
 
-    public class ChatMessageViewModel
+        public class ChatMessageViewModel
     {
         public string fromId { get; set; }
         public string toId { get; set; }
@@ -61,6 +89,7 @@ namespace CodeTweets.Models
 
         public string msgState { get; set; }
         public string content { get; set; }
+        public string imgPath { get; set; }
     }
 
     public class ExploreUsersViewModel
@@ -101,6 +130,7 @@ namespace CodeTweets.Models
         public string chatId { get; set; }
         public string userId { get; set; }
         public string name { get; set; }
+        public bool isAway { get; set; }
         public string userImagePath { get; set; }
         public ApplicationUser appUser { get; set; }
     }

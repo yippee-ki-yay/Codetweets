@@ -297,8 +297,6 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Manage\AddPhoneNumber.cshtml" />
     <Content Include="Views\Manage\ChangePassword.cshtml" />
@@ -308,9 +306,6 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\RoutesDemo\One.cshtml" />
-    <Content Include="Views\RoutesDemo\Two.cshtml" />
-    <Content Include="Views\RoutesDemo\Three.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\RoutesDemo\addCodePost.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
@@ -319,7 +314,6 @@
     <Content Include="Views\Feed\UserPage.cshtml" />
     <Content Include="Views\Feed\UserPosts.cshtml" />
     <Content Include="Views\Home\Settings.cshtml" />
-    <Content Include="Views\Home\Chat.cshtml" />
     <Content Include="Views\Home\Messages.cshtml" />
   </ItemGroup>
   <ItemGroup>

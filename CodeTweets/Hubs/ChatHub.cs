@@ -12,15 +12,18 @@ namespace CodeTweets.Hubs
 {
     public class ChatHub : Hub
     {
-        static List<UserChatViewModel> chatUsers = new List<UserChatViewModel>();
-
-        static ApplicationDbContext db = new ApplicationDbContext();
+        private static List<UserChatViewModel> chatUsers = new List<UserChatViewModel>();
 
         public void ConnectUser()
         {
             string username = Context.User.Identity.Name;
 
-            var user = db.Users.ToList().Find(appUser => appUser.Email == username);
+            ApplicationUser user = null;
+
+            using (ApplicationDbContext db = new ApplicationDbContext())
+            {
+                user = db.Users.ToList().Find(appUser => appUser.Email == username);
+            }
 
             if (user == null)
                 return;
@@ -28,54 +31,129 @@ namespace CodeTweets.Hubs
             if (user != null)
                 username = user.user;
 
-            var u = chatUsers.Find(ur => ur.userId == user.Id);
+            lock(chatUsers)
+            {
+                var u = chatUsers.Find(ur => ur.userId == user.Id);
 
-            if (u == null)
-                chatUsers.Add(new UserChatViewModel() { userId = user.Id, chatId = Context.User.Identity.Name, name = user.user, appUser = user, userImagePath = user.userImgPath});
+                if (u == null)
+                    chatUsers.Add(new UserChatViewModel()
+                    {
+                        userId = user.Id,
+                        chatId = Context.User.Identity.Name,
+                        name = user.user,
+                        appUser = user,
+                        userImagePath = user.userImgPath,
+                        isAway = false
+                    });
+            }
+           
+        }
+
+        //called by client to set if the user is inactive for a while
+        public void UserAway()
+        {
+            using (ApplicationDbContext db = new ApplicationDbContext())
+            {
+                lock(chatUsers)
+                {
+                    var currChatUser = chatUsers.Find(u => u.chatId == Context.User.Identity.Name);
+
+                    if (currChatUser != null)
+                    {
+                        currChatUser.isAway = true;
+                    }
+                }
+            }
+        }
+
+        //called by client when the user is back online
+        public void UserBackOnline()
+        {
+            using (ApplicationDbContext db = new ApplicationDbContext())
+            {
+                lock (chatUsers)
+                {
+                    var currChatUser = chatUsers.Find(u => u.chatId == Context.User.Identity.Name);
+
+                    if (currChatUser != null)
+                    {
+                        currChatUser.isAway = false;
+                    }
+                }
+            }
         }
 
         public void isTyping(string userId)
         {
-            var u = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
+            lock (chatUsers)
+            {
+                var u = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
 
-            var otherUser = chatUsers.Find(user => user.userId == userId);
+                var otherUser = chatUsers.Find(user => user.userId == userId);
 
-            if(u != null && otherUser != null)
-                Clients.User(otherUser.chatId).showTyping(u.name);
+                if (u != null && otherUser != null)
+                    Clients.User(otherUser.chatId).showTyping(u.name);
+            }
         }
 
+        public void notTyping(string userId)
+        {
+            lock (chatUsers)
+            {
+                var u = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
+
+                var otherUser = chatUsers.Find(user => user.userId == userId);
+
+                if (u != null && otherUser != null)
+                    Clients.User(otherUser.chatId).removeTyping(u.name);
+            }
+        }
+
+        //I don't this we are using this, something bad might happend if you deleted this
         public void Send(string name, string message)
         {
+            using (ApplicationDbContext db = new ApplicationDbContext())
+            {
+                string username = Context.User.Identity.Name;
 
-            string username = Context.User.Identity.Name;
+                var user = db.Users.ToList().Find(u => u.Email == username);
 
+                if (user != null)
+                    username = user.user;
 
-            var user = db.Users.ToList().Find(u => u.Email == username);
-
-            if (user != null)
-                username = user.user;
-
-            // Call the addNewMessageToPage method to update clients.
-            Clients.All.addNewMessageToPage(username, message);
+                // Call the addNewMessageToPage method to update clients.
+                Clients.All.addNewMessageToPage(username, message);
+            }
+               
         }
 
-
+        //client calls this to cheks the status of the user
         public string isConnected(string userId)
         {
-            UserChatViewModel currUser = chatUsers.Find(user => user.userId == userId);
+            lock (chatUsers)
+            {
+                UserChatViewModel currUser = chatUsers.Find(user => user.userId == userId);
 
-            return (currUser == null) ? "Offline" : "Online";
+                if (currUser != null)
+                    if (currUser.isAway)
+                        return "Away";
+
+                return (currUser == null) ? "Offline" : "Online";
+            }
         }
 
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            UserChatViewModel currUser = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
+            lock (chatUsers)
+            {
+                UserChatViewModel currUser = chatUsers.Find(user => user.chatId == Context.User.Identity.Name);
 
-            if (currUser != null)
-                chatUsers.Remove(currUser);
+                if (currUser != null)
+                    chatUsers.Remove(currUser);
 
-            return base.OnDisconnected(stopCalled);
+                return base.OnDisconnected(stopCalled);
+            }
         }
 
         public void SendPrivateMessage(string message, string userId)
@@ -88,26 +166,29 @@ namespace CodeTweets.Hubs
                 if (currentUser != null)
                     username = currentUser.user;
 
-                //u is the user i'm sending to
-                var u = chatUsers.Find(user => user.userId == userId);
-
-                //other user Name
-                string sendToUserName = db.Users.ToList().Find(usr => usr.Id == userId).user;
-
-                if (u != null)
+                lock (chatUsers)
                 {
-                    db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = u.appUser.Id, seen = true });
+                    //u is the user i'm sending to
+                    var u = chatUsers.Find(user => user.userId == userId);
 
-                    Clients.User(u.chatId).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "notCurrentUser", u.userImagePath);
-                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "CurrentUser", currentUser.userImgPath);
-                }
-                else
-                {
-                    db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = userId, seen = false });
-                    Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, sendToUserName, message, currentUser.user, "CurrentUser", currentUser.userImgPath);
-                }
+                    //other user Name
+                    string sendToUserName = db.Users.ToList().Find(usr => usr.Id == userId).user;
 
-                db.SaveChanges();
+                    if (u != null)
+                    {
+                        db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = u.appUser.Id, seen = true });
+
+                        Clients.User(u.chatId).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "notCurrentUser", currentUser.userImgPath);
+                        Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, u.name, message, currentUser.user, "CurrentUser", currentUser.userImgPath);
+                    }
+                    else
+                    {
+                        db.messages.Add(new Message() { content = message, fromUserId = currentUser.Id, toUserId = userId, seen = false });
+                        Clients.User(Context.User.Identity.Name).sendPrivateMessage(currentUser.Id, sendToUserName, message, currentUser.user, "CurrentUser", currentUser.userImgPath);
+                    }
+
+                    db.SaveChanges();
+                }
             }
         }
     }
