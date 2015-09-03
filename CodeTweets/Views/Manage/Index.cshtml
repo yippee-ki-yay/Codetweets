@@ -3,6 +3,35 @@
     ViewBag.Title = "Manage";
 }
 
+@section Scripts
+{
+    <script>
+        $("#uploadEditorImage").change(function () {
+        var data = new FormData();
+        var files = $("#uploadEditorImage").get(0).files;
+        if (files.length > 0) {
+            data.append("HelpSectionImages", files[0]);
+        }
+        $.ajax({
+            url: "Home/AddImage",
+            type:"POST",
+            processData: false,
+            contentType: false,
+            data: data,
+            success: function (response) {
+                alert("Image loaded");
+
+            },
+            error: function (er) {
+                alert(er);
+            }
+
+            });
+        });
+    </script>
+}
+
+
 <h2>@ViewBag.Title.</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
@@ -23,6 +52,8 @@
             }
             ]
         </dd>
+        <dt> Upload user image</dt>
+        <dd><input type="file" id="uploadEditorImage" /></dd>
         <dt>External Logins:</dt>
         <dd>
             @Model.Logins.Count [

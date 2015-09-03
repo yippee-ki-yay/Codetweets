@@ -14,14 +14,13 @@
 
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="/Home/Messages">Messages <span class="badge">{{unseenMsgNumber}}</span> </a></li>
-                <li><a href="/Home/Settings">Settings</a></li>
                <li> @Html.ActionLink("Hello " + username.Value +  "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" }) </li>
                 <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
             </ul>
 
-            <a class="navbar-brand" rel="home" href="#" title="Buy Sell Rent Everyting">
-                <img style="max-width:40px; max-height:30px; margin-top: -1px;"
-                     src="~/img/@userImage.Value">
+            <a class="navbar-brand" rel="home" href="#" title="User image">
+                        <img style="max-width:40px; max-height:30px; margin-top: -1px;"
+                             src="~/img/@userImage.Value">
             </a>
 
         }

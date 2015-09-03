@@ -171,6 +171,20 @@ namespace CodeTweets.Hubs
                     //u is the user i'm sending to
                     var u = chatUsers.Find(user => user.userId == userId);
 
+
+                    var toUser = db.Users.ToList().Find(usr => usr.Id == u.userId);
+
+                    if (toUser != null)
+                    {
+                        var isBlocked = toUser.blockedList.Find(usr => usr.Id == currentUser.Id);
+                        if (isBlocked != null)
+                        {
+                            Clients.User(Context.User.Identity.Name).userBlocked(u.name);
+                            return;
+                        }
+                          
+                    }
+
                     //other user Name
                     string sendToUserName = db.Users.ToList().Find(usr => usr.Id == userId).user;
 

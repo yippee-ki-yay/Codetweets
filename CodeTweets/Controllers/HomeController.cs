@@ -1,11 +1,14 @@
 ﻿using CodeTweets.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.Identity.Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 
 namespace CodeTweets.Controllers
 {
@@ -79,9 +82,11 @@ namespace CodeTweets.Controllers
                         currentUser.userImgPath = fileName;
 
                     db.SaveChanges();
-                    store.UpdateAsync(currentUser);
-                    store.Context.SaveChanges();
-                    
+                    // manager.UpdateAsync(currentUser);
+                    //store.Context.SaveChanges();
+                    // FormsAuthentication.SignOut();
+                   // Session.Abandon();
+                   // Index();
                 }
 
             }

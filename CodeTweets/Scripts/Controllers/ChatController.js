@@ -106,6 +106,16 @@
 
     }
 
+    chat.client.userBlocked = function(name)
+    {
+        var sendWindow = $('#' + name);
+
+        //we remove it so we don't stack the messages
+        sendWindow.find('#blocked').remove();
+
+        sendWindow.append("<div class='row msg_container base_receive' id='blocked'>You are blocked by this user</div>");
+    }
+
     //show if the other user is typing
     chat.client.showTyping = function(name)
     {

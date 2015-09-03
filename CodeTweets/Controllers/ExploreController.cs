@@ -96,6 +96,7 @@ namespace CodeTweets.Controllers
                     tmp.user = user.user;
                     tmp.UserName = user.UserName;
                     tmp.isChat = false;
+                    tmp.isDisabled = false;
 
                     exploreList.Add(tmp);
 

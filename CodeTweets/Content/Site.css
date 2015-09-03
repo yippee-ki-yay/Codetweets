@@ -276,9 +276,11 @@ body{
 .col-md-2, .col-md-10{
     padding:0;
 }
+/*
 .panel{
     margin-bottom: 0px;
 }
+    */
 .chat-window{
     bottom:0;
     position:fixed;
@@ -398,5 +400,4 @@ img {
     left:0px;
     bottom:0;
 }
-
 

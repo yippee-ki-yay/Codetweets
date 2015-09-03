@@ -28,7 +28,7 @@
     $scope.urlJson = getJsonFromUrl();
 
 
-    $scope.loadData = function() {
+    $scope.loadData = function () {
         $http.post('/Feed/getUserPosts', { hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'], count: $scope.scroll.count })
            .then(function (response) {
                $scope.posts = response.data;
@@ -61,14 +61,10 @@
 
     $scope.loadMore = function ()
     {
-        console.log("skrolaj");
-
         if ($scope.scroll.busy == true)
             return;
 
         $scope.scroll.busy = true;
-
-        console.log($scope.scroll.count);
 
         $http.post('/Feed/getUserPosts', { hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'], count: $scope.scroll.count })
       .then(function (response) {
@@ -77,7 +73,9 @@
               if ($scope.posts == undefined) {
                   $scope.posts = [];
               }
-
+              response.data[i].content =  response.data[i].content.replace(/\#(\S+)/g, "<a href=\"/Feed/UserPosts?hashtag=$1\"> $1 </a>");
+            //  response.data[i].showComments = false;
+            //  response.data[i].newComment = false;
               $scope.posts.push(response.data[i]);
               $scope.scroll.busy = false;
               
@@ -95,9 +93,9 @@
 
    // $scope.listMyCodePosts();
 
-        $scope.order = function(type)
+        $scope.order = function(t)
         {
-            $http.post('/Feed/getUserPosts', { orderParam :type})
+            $http.post('/Feed/getUserPosts', { orderParam: t, hashtag: $scope.urlJson['hashtag'], type: $scope.urlJson['type'], count: $scope.scroll.count })
                 .then(function (response) {
                  $scope.posts = response.data;
             }, function (response) {
@@ -208,19 +206,31 @@
     {
         var curr = $scope.getRow(post_id);
 
-        if (curr.hated === "You hate this")
-            return;
-
-        $http.post('/Feed/Hate', { "id": post_id })
-              .then(function (response) {
-                  if(response.data === "success")
-                  {
-                      curr.hate++;
-                      curr.hated = "You hate this";
-                  }
-              }, function (response) {
-                  alert('server not ok');
-              });
+        if (curr.hated === "Hate")
+        {
+            $http.post('/Feed/Hate', { "id": post_id, 'state': 'hate' })
+            .then(function (response) {
+                if (response.data === "success") {
+                    curr.hate++;
+                    curr.hated = "You hate this";
+                }
+            }, function (response) {
+                alert('server not ok');
+            });
+        }
+        else
+        {
+            $http.post('/Feed/Hate', { "id": post_id, 'state': 'unhate' })
+            .then(function (response) {
+                if (response.data === "success") {
+                    curr.hate--;
+                    curr.hated = "Hate";
+                }
+            }, function (response) {
+                alert('server not ok');
+            });
+        }
+      
     }
 
     $scope.newCodePost = function()

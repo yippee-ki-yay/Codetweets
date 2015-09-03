@@ -15,8 +15,8 @@ namespace CodeTweets.Models
         [Key, Column(Order = 1)]
         public int CommentId { get; set; }
 
-        public virtual CodePost Post { get; set; }
+        public CodePost Post { get; set; }
 
-        public virtual Comment Comment { get; set; }
+        public Comment Comment { get; set; }
     }
 }

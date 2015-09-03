@@ -45,18 +45,18 @@ namespace CodeTweets.Controllers
             }
         }
 
-        private void orderPosts(string orderParam, IEnumerable<CodePost> jsonList)
+        private void orderPosts(string orderParam, ref List<ProfilePostsViewModel> jsonList)
         {
             if (orderParam.Equals("date"))
             {
                 if (toggleDate)
                 {
-                    jsonList = jsonList.OrderByDescending(post => post.date);
+                    jsonList = jsonList.OrderByDescending(post => post.date).ToList();
                     toggleDate = false;
                 }
                 else
                 {
-                    jsonList = jsonList.OrderBy(post => post.date);
+                    jsonList = jsonList.OrderBy(post => post.date).ToList();
                     toggleDate = true;
                 }
 
@@ -65,19 +65,19 @@ namespace CodeTweets.Controllers
             {
                 if (toggleUser)
                 {
-                    jsonList = jsonList.OrderByDescending(post => post.userName);
+                    jsonList = jsonList.OrderByDescending(post => post.userName).ToList();
                     toggleUser = false;
                 }
                 else
                 {
-                    jsonList = jsonList.OrderBy(post => post.userName);
+                    jsonList = jsonList.OrderBy(post => post.userName).ToList();
                     toggleUser = true;
                 }
             }
         }
 
         [HttpPost]
-        public ContentResult getUserPosts(string orderParam, string type, string count, string hashtag)
+        public JsonResult getUserPosts(string orderParam, string type, string count, string hashtag)
         {
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
             var currentUser = manager.FindById(User.Identity.GetUserId());
@@ -117,18 +117,25 @@ namespace CodeTweets.Controllers
                 
 
 
-            var postArr = jsonList.ToArray();
+            var postArr = jsonList.Reverse().ToArray();
 
             //if no post found return empty
             if (postArr.Length == 0)
-                return Content("", "application/json");
+                return Json("");
 
             List<ProfilePostsViewModel> profileList = new List<ProfilePostsViewModel>();
 
+            int increment = cnt;
 
-            for(int i = cnt; i < postArr.Length; ++i)
+            if (!String.IsNullOrEmpty(orderParam))
             {
-                if(i < cnt+5)
+                cnt = 0;
+                increment = postArr.Length;
+            }
+
+            for (int i = cnt; i < postArr.Length; ++i)
+            {
+                if(i < increment+5)
                 {
                     ProfilePostsViewModel tmp = new ProfilePostsViewModel();
 
@@ -141,6 +148,7 @@ namespace CodeTweets.Controllers
                     tmp.hate = post.hate;
                     tmp.userName = post.userName;
                     tmp.userImgPath = post.userImgPath;
+                    tmp.date = post.date;
                     //uzmemo iz baze votova da li je korisnik na ovom postu lupio like/hate i saljemo ka klijentu
 
 
@@ -152,9 +160,12 @@ namespace CodeTweets.Controllers
                         tmp.liked = (liked != null) ? "You liked this" : "Like";
                         tmp.hated = (hated != null) ? "You hate this" : "Hate";
 
-                        tmp.commentList = from c in db.postComments.ToList()
-                                          where c.CodePostId == post.id
-                                          select c.Comment;
+                       
+                        //IEnumerable<CommentPost> commentPost 
+                        tmp.commentList = from c in db.comments.ToList()
+                                              where c.post_id == post.id
+                                              select c;
+
 
                         profileList.Add(tmp);
                     }
@@ -164,22 +175,16 @@ namespace CodeTweets.Controllers
 
             //Post sorting by date and user name
             if (!String.IsNullOrEmpty(orderParam))
-                orderPosts(orderParam, jsonList);
+                orderPosts(orderParam, ref profileList);
 
-            var list = JsonConvert.SerializeObject(profileList,
-                                                  Formatting.None,
-                                                  new JsonSerializerSettings()
-                                                  {
-                                                      ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                                                  });
-
-            return Content(list, "application/json");
+            return Json(profileList);
         }
 
         //Izlistava sve postove trenutnog korisnika
         [Authorize]
         public ActionResult UserPosts(string hashtag)
         {
+
             using (ApplicationDbContext db = new ApplicationDbContext())
             {
                 var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
@@ -249,7 +254,7 @@ namespace CodeTweets.Controllers
         {
             using (ApplicationDbContext db = new ApplicationDbContext())
             {
-                var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+                var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
                 var currentUser = manager.FindById(User.Identity.GetUserId());
                 var followedUser = manager.FindById(userId);
 
@@ -262,11 +267,11 @@ namespace CodeTweets.Controllers
                     UnFollow(currentUser, followedUser);
                 }
 
-                manager.UpdateAsync(currentUser);
+               // manager.UpdateAsync(currentUser);
 
                 var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 
-                store.Context.SaveChanges();
+                //store.Context.SaveChanges();
                 db.SaveChanges();
                 return "success";
             }
@@ -309,11 +314,11 @@ namespace CodeTweets.Controllers
                     }
                 }
 
-                manager.UpdateAsync(currentUser);
+               // manager.UpdateAsync(currentUser);
 
                 var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 
-                store.Context.SaveChanges();
+               // store.Context.SaveChanges();
                 db.SaveChanges();
                 return "success";
             }
@@ -387,7 +392,7 @@ namespace CodeTweets.Controllers
 
         //Like is called by angular to update hate count on post
         [HttpPost]
-        public string Hate(int id)
+        public string Hate(int id, string state)
         {
             using (ApplicationDbContext db = new ApplicationDbContext())
             {
@@ -400,14 +405,30 @@ namespace CodeTweets.Controllers
                 {
                     var res = currentUser.usersVotes.Find(user => user.UserId == currentUser.Id && post.id == user.CodePostId);
 
-                    if (res == null)
-                    {
-                        db.votes.Add(new UsersVotes() { User = currentUser, Post = post, Type = 1 });
+                   
+                        if (state.Equals("unhate"))
+                        {
+                             if (res != null)
+                             {
+                                 db.votes.Remove(res);
+                                 post.hate--;
+                            db.SaveChanges();
+                            return "success";
+                        }
+                        }
+                        else
+                        {
+                            if (res == null)
+                            {
+                                db.votes.Add(new UsersVotes() { User = currentUser, Post = post, Type = 1 });
+                                 post.hate++;
+                            db.SaveChanges();
+                            return "success";
+                        }
+                        }
 
-                        post.hate++;
-                        db.SaveChanges();
-                        return "success";
-                    }
+                    return "fail";
+                    
                 }
 
 
@@ -445,7 +466,7 @@ namespace CodeTweets.Controllers
                 CodePost currPost = db.posts.ToList().Find(x => x.id == postId);
                 if (currPost != null)
                 {
-                    Comment newComment = new Comment() { content = commentContent, user_id = currPost.user_id, userName = currPost.userName };
+                    Comment newComment = new Comment() { content = commentContent, user_id = currPost.user_id, userName = currPost.userName, post_id = postId };
 
                     db.postComments.Add(new CommentPost() { Post = currPost, Comment = newComment });
 
@@ -472,10 +493,11 @@ namespace CodeTweets.Controllers
                     var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
                     var currentUser = manager.FindById(User.Identity.GetUserId());
 
+                    //currPost.user_id = currentUser.Id;
+
+                    currPost.content = "<a href='/Feed/UserPosts?type=" + currPost.user_id + "'> @" + currPost.userName + " </a> has tweeted: " + currPost.content;
+
                     currPost.user_id = currentUser.Id;
-
-                    currPost.content = "<a href='/Feed/UserPosts?type=" + currentUser.Id + "'> @" + currPost.userName + " </a> has tweeted: " + currPost.content;
-
                     currPost.userName = currentUser.user;
 
                     //add the new post with the new id/name and handle

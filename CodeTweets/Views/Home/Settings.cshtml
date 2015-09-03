@@ -1,30 +1,4 @@
-﻿@section Scripts
-{
-    <script>
-        $("#uploadEditorImage").change(function () {
-        var data = new FormData();
-        var files = $("#uploadEditorImage").get(0).files;
-        if (files.length > 0) {
-            data.append("HelpSectionImages", files[0]);
-        }
-        $.ajax({
-            url: "AddImage",
-            type:"POST",
-            processData: false,
-            contentType: false,
-            data: data,
-            success: function (response) {
-                alert("Image loaded");
-
-            },
-            error: function (er) {
-                alert(er);
-            }
-
-            });
-        });
-    </script>
-}
+﻿
 
 <div class="row">
     <div class="col-lg-8 col-lg-offset-2 settings-background">

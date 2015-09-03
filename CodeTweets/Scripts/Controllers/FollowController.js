@@ -14,6 +14,16 @@
         $http.post('/Explore/UsersJson', { "searchText": $scope.searchText, "userType": $scope.userType })
             .then(function (response) {
                 $scope.AllUsers = response.data;
+
+                for (var i = 0; i < $scope.AllUsers.length; ++i)
+                {
+                    if($scope.AllUsers[i].isBlocked == "Unblock")
+                    {
+                        $scope.AllUsers[i].isChat = true;
+                        $scope.AllUsers[i].isDisabled = true;
+                    }
+                }
+
             }, function (response) {
                 alert('server not ok');
             });
@@ -81,10 +91,12 @@
                 if (curr.isBlocked == "Block") {
                     curr.isBlocked = "Unblock";
                     curr.isDisabled = true;
+                    curr.isChat = true;
                 }
                 else {
                     curr.isBlocked = "Block";
                     curr.isDisabled = false;
+                    curr.isChat = false;
                 }
             }
         }, function (response) {

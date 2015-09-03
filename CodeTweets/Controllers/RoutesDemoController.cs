@@ -65,9 +65,10 @@ namespace CodeTweets.Controllers
                     db.posts.Add(post);
                 }
 
+                db.SaveChanges();
             }
 
-
+           
         }
 
         [HttpPost]
@@ -98,7 +99,7 @@ namespace CodeTweets.Controllers
                 // IdentityDbContext db = new IdentityDbContext();
                 // db.SaveChanges();
                 
-                db.posts.Add(tmp);
+              //  db.posts.Add(tmp);
                 db.SaveChanges();
 
                 return "success";

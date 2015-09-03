@@ -29,7 +29,7 @@ namespace CodeTweets.Models
 
         public virtual IEnumerable<HashTagPost> tagPosts { get; set; }
         public virtual IEnumerable<UsersVotes> usersVotes { get; set; }
-        public virtual IEnumerable<CommentPost> postComments { get; set; }
+        public IEnumerable<CommentPost> postComments { get; set; }
     }
 
     public class ProfilePostsViewModel
@@ -49,6 +49,7 @@ namespace CodeTweets.Models
         public string liked { get; set; }
         public string hated { get; set; }
         public string userImgPath { get; set; }
+        public DateTime date { get; set; }
 
         public IEnumerable<Comment> commentList { get; set; }
 

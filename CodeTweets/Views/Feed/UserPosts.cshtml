@@ -22,19 +22,6 @@
                         </ul>
                     </div>
                 </div>
-                <div class="col-lg-4 col-lg-offset-8>
-                <div class=" dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
-                        Posts
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">15</a></li>
-                        <li><a href="#">50</a></li>
-                        <li><a href="#">100</a></li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
     <div class="container" style="background-color:#222222">
@@ -55,7 +42,7 @@
                                 <div class="row">
                                     <div class="col-xs-9">
                                         <h4><span class="label label-default"> @@ {{post.userName}}</span></h4><h4>
-                                            <small  class="text-muted" id="postData" >{{post.content}}<a href="#" class="text-muted"></a></small>
+                                            <small  class="text-muted" id="postData" ng-bind-html="post.content">{{post.content}}<a href="#" class="text-muted"></a></small>
                                         </h4>
                                     </div>
                                 </div>
