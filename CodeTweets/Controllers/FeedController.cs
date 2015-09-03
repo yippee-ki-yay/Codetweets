@@ -267,7 +267,7 @@ namespace CodeTweets.Controllers
                     UnFollow(currentUser, followedUser);
                 }
 
-               // manager.UpdateAsync(currentUser);
+                //manager.UpdateAsync(currentUser);
 
                 var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 
@@ -314,7 +314,7 @@ namespace CodeTweets.Controllers
                     }
                 }
 
-               // manager.UpdateAsync(currentUser);
+              //  manager.UpdateAsync(currentUser);
 
                 var store = new UserStore<ApplicationUser>(new ApplicationDbContext());
 

@@ -171,8 +171,10 @@ namespace CodeTweets.Hubs
                     //u is the user i'm sending to
                     var u = chatUsers.Find(user => user.userId == userId);
 
+                    ApplicationUser toUser = null;
 
-                    var toUser = db.Users.ToList().Find(usr => usr.Id == u.userId);
+                    if(u != null)
+                        toUser = db.Users.ToList().Find(usr => usr.Id == u.userId);
 
                     if (toUser != null)
                     {

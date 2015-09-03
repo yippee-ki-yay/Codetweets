@@ -1,9 +1,12 @@
-﻿var ChatController = function ($scope, $http, $document) {
+﻿var ChatController = function ($scope, $http, $document, $localStorage) {
     $scope.openChatWindows = 0;
     $scope.chatUserId = '';
     $scope.idleTime = 0;
     $scope.typingTime = 0;
 
+    $scope.$storage = $localStorage;
+
+    $localStorage.windowList = [];
 
     $.connection.hub.start().done(function () { chat.server.connectUser(); });
 
@@ -22,9 +25,8 @@
            alert('server not ok');
        });
 
-    $scope.setMessagesSeen = function(toUser)
-    {
-        $http.post('/Chat/setMessagesSeen', {'toUser':toUser})
+    $scope.setMessagesSeen = function (toUser) {
+        $http.post('/Chat/setMessagesSeen', { 'toUser': toUser })
               .then(function (response) {
                   var num = response.data;
                   $scope.unseenMsgNumber = $scope.unseenMsgNumber - num;
@@ -32,6 +34,16 @@
                   alert('server not ok');
               });
     }
+
+    $scope.reloadChat = function ()
+    {
+        $.each($scope.$storage.windowList, function (i, item) {
+
+            $scope.addChatWindow(item.userId, item.userName);
+        });
+    }
+
+    $scope.reloadChat();
 
     //checks users status is Online/Offline/Away
     $scope.updateStatus = function ()
@@ -232,6 +244,8 @@
 
         $("#chatStrip").append(chatHtml);
 
+        $localStorage.windowList.push({'userId': userId, 'userName':userName});
+
         $scope.updateStatus();
 
         var windowWidth = $("#chat_window_" + $scope.openChatWindows).width();
@@ -274,4 +288,4 @@
 
 }
 
-ChatController.$inject = ['$scope', '$http', '$document'];
+ChatController.$inject = ['$scope', '$http', '$document', '$localStorage'];

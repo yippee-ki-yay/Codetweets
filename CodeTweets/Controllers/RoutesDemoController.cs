@@ -26,8 +26,9 @@ namespace CodeTweets.Controllers
         }
 
         //finds all the hashtags in the post, stores the new ones, updates the existing ones
-        private void updateHashTags(CodePost post)
+        private bool updateHashTags(CodePost post)
         {
+            bool added = false;
 
             using (ApplicationDbContext db = new ApplicationDbContext())
             {
@@ -57,18 +58,21 @@ namespace CodeTweets.Controllers
                         db.posts.Add(post);
 
                         db.hashTags.Add(new HashTagPost() { Hash = newTag, Post = post });
+                        added = true;
                         continue;
                     }
 
                     result.count++;
                     db.hashTags.Add(new HashTagPost() { Hash = result, Post = post });
                     db.posts.Add(post);
+                    added = true;
+
                 }
 
                 db.SaveChanges();
             }
 
-           
+            return added;
         }
 
         [HttpPost]
@@ -93,13 +97,11 @@ namespace CodeTweets.Controllers
                     tmp.userImgPath = currentUser.userImgPath;
                 }
 
-                updateHashTags(tmp);
-
-
-                // IdentityDbContext db = new IdentityDbContext();
-                // db.SaveChanges();
+                bool result = updateHashTags(tmp);
                 
-              //  db.posts.Add(tmp);
+                if(result == false)
+                    db.posts.Add(tmp);
+
                 db.SaveChanges();
 
                 return "success";

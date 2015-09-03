@@ -1,4 +1,4 @@
-﻿var CodeTweets = angular.module('CodeTweets', ['ngRoute', 'infinite-scroll', 'ngSanitize']), chat = $.connection.chatHub;
+﻿var CodeTweets = angular.module('CodeTweets', ['ngRoute', 'infinite-scroll','ngSanitize', 'ngStorage']), chat = $.connection.chatHub;
 
 CodeTweets.controller('LandingPageController', LandingPageController);
 CodeTweets.controller('LoginController', LoginController);
