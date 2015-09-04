@@ -149,7 +149,7 @@
         if (currWindow.length == 0 && sendWindow.length == 0) //if doesn't exists add new window
         {
             $scope.addChatWindow(id, name);
-
+            $scope.reloadChat();
             newWindow = $("#" + name);
         }
         else
@@ -212,6 +212,8 @@
 
         if ($("#" + userName).length != 0)
             return;
+
+        $scope.loadChatHistory(userId);
 
         var chatHtml = "<div class='row chat-window col-md-2' id='chat_window_" + $scope.openChatWindows + "' style='margin-left:10px;'> \
                <div class='col-xs-12 col-md-12 '> \

@@ -82,6 +82,8 @@ namespace CodeTweets.Controllers
             {
                 CodePost tmp = new CodePost();
 
+                content = HttpUtility.JavaScriptStringEncode(content);
+
                 var store = new UserStore<ApplicationUser>(db);
                 var userManager = new UserManager<ApplicationUser>(store);
                 ApplicationUser user = userManager.FindByNameAsync(User.Identity.Name).Result;

@@ -48,9 +48,6 @@
 
    // $scope.loadData();
 
-    //refresh the feed every 20 seconds
-    //$interval($scope.loadData(), 2000);
-
     /*$http.post('/Feed/getUserPosts', {type:"feed"})
        .then(function (response) {
            $scope.posts = response.data;
@@ -89,9 +86,16 @@
 
     }
 
-    //tweet.replace(/(\#\S+)/g, "<a href=\"\"> $1 </a>");
+    $scope.refreshPosts = function()
+    {
+        $scope.scroll.busy = false;
+        $scope.scroll.count = 0;
+        $scope.posts = undefined;
+        $scope.loadMore();
+    }
 
-   // $scope.listMyCodePosts();
+    //refresh the feed every 20 seconds
+    setInterval($scope.refreshPosts, 60000);
 
         $scope.order = function(t)
         {

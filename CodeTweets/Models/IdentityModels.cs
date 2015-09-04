@@ -54,10 +54,10 @@ namespace CodeTweets.Models
 
         protected override void Seed(ApplicationDbContext context)
         {
-            var PasswordHash = new PasswordHasher();
+            /*var PasswordHash = new PasswordHasher();
 
             context.Users.Add(new ApplicationUser() { user = "sdfds", UserName="nesa@gmail.com", PasswordHash = PasswordHash.HashPassword("123456") });
-            context.SaveChanges();
+            context.SaveChanges();*/
             base.Seed(context);
         }
     }

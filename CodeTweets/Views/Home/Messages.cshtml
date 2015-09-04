@@ -11,7 +11,7 @@
         </thead>
         <tr ng-repeat="x in users">
             <td><a href="/Feed/UserPosts?type={{x.userId}}" /> {{x.userName}}</td>
-            <td><button ng-click="loadChatHistory(x.userId)">Chat History</button></td>
+            <td><button ng-click="addChatWindow(x.userId, x.userName)">Chat History</button></td>
        </tr>
     </table>
 

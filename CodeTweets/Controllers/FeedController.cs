@@ -383,8 +383,6 @@ namespace CodeTweets.Controllers
 
                 }
 
-
-
                 return "fail";
             }
         }
@@ -448,8 +446,6 @@ namespace CodeTweets.Controllers
                 {
                     var comments = db.postComments.Select(comment => comment.CodePostId == postId);
 
-
-
                     return Json(comments);
                 }
 
@@ -464,9 +460,16 @@ namespace CodeTweets.Controllers
             {
                 //find the post
                 CodePost currPost = db.posts.ToList().Find(x => x.id == postId);
+
+                //get current user
+                var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
+                var currentUser = manager.FindById(User.Identity.GetUserId());
+
                 if (currPost != null)
                 {
-                    Comment newComment = new Comment() { content = commentContent, user_id = currPost.user_id, userName = currPost.userName, post_id = postId };
+                    commentContent = HttpUtility.JavaScriptStringEncode(commentContent);
+
+                    Comment newComment = new Comment() { content = commentContent, user_id = currPost.user_id, userName = currentUser.user, post_id = postId };
 
                     db.postComments.Add(new CommentPost() { Post = currPost, Comment = newComment });
 

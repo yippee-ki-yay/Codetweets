@@ -160,6 +160,9 @@ namespace CodeTweets.Hubs
         {
             using (ApplicationDbContext db = new ApplicationDbContext())
             {
+
+                message = HttpUtility.JavaScriptStringEncode(message);
+
                 string username = Context.User.Identity.Name;
                 var currentUser = db.Users.ToList().Find(usr => usr.Email == username);
 

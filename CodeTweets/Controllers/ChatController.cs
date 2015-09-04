@@ -40,7 +40,10 @@ namespace CodeTweets.Controllers
 
                     using (ApplicationDbContext dbList = new ApplicationDbContext())
                     {
-                        tmp.userName = dbList.Users.ToList().Find(usr => usr.Id == tmp.userId).user;
+                        var userN = dbList.Users.ToList().Find(usr => usr.Id == tmp.userId);
+                        if(userN != null)
+                            tmp.userName = userN.user;
+
                         tmp.unseenMsgCount = dbList.messages.Where(msg => msg.seen == false && tmp.userId == msg.toUserId && msg.fromUserId == currentUser.Id).Count();
                     }
 
@@ -138,6 +141,8 @@ namespace CodeTweets.Controllers
                 var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(db));
                 var currentUser = manager.FindById(User.Identity.GetUserId());
 
+                if (currentUser == null)
+                    return 0;
 
                 List<Message> unseenMessages = db.messages.Where( msg => msg.toUserId == currentUser.Id 
                                                && msg.fromUserId == toUser && msg.seen == false).ToList();
